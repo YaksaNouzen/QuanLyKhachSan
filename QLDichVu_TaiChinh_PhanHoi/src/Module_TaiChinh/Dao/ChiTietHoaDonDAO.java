@@ -2,7 +2,7 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
-package Module_TaiChinh.Dao;
+package Module_TaiChinh.dao;
 
 
 import Module_TaiChinh.model.ChiTietHoaDon;
@@ -128,9 +128,9 @@ public class ChiTietHoaDonDAO {
 
             if (ct.getMaDichVu() == null
                     || ct.getMaDichVu().trim().isEmpty()) {
-                ps.setNull(4, java.sql.Types.VARCHAR);
+                ps.setNull(4, java.sql.Types.INTEGER);
             } else {
-                ps.setString(4, ct.getMaDichVu());
+                ps.setInt(4, maDichVuSo(ct.getMaDichVu()));
             }
 
             ps.setString(5, ct.getLoaiChiPhi());
@@ -180,9 +180,9 @@ public class ChiTietHoaDonDAO {
 
             if (ct.getMaDichVu() == null
                     || ct.getMaDichVu().trim().isEmpty()) {
-                ps.setNull(3, java.sql.Types.VARCHAR);
+                ps.setNull(3, java.sql.Types.INTEGER);
             } else {
-                ps.setString(3, ct.getMaDichVu());
+                ps.setInt(3, maDichVuSo(ct.getMaDichVu()));
             }
 
             ps.setString(4, ct.getLoaiChiPhi());
@@ -246,5 +246,17 @@ public class ChiTietHoaDonDAO {
             e.printStackTrace();
             return false;
         }
+    }
+
+    private int maDichVuSo(String value) {
+        String ma = value.trim().toUpperCase(java.util.Locale.ROOT);
+        if (ma.startsWith("DV")) ma = ma.substring(2);
+        try {
+            int result = Integer.parseInt(ma);
+            if (result > 0) return result;
+        } catch (NumberFormatException ignored) {
+            // Thông báo rõ mã sai thay vì để SQL Server báo lỗi chuyển kiểu.
+        }
+        throw new IllegalArgumentException("Mã dịch vụ phải là số hoặc dạng DV000001.");
     }
 }

@@ -1,5 +1,10 @@
 # Module Quản lý phản hồi khách hàng
 
+> Tài liệu lịch sử của module độc lập, không phải hướng dẫn chạy bản tích hợp.
+> **Không chạy** `sql/module_phan_hoi.sql` hay tạo database `QLPhanHoi` cho bản
+> hiện tại. Dùng `../database/FULL_DATABASE.sql` và hướng dẫn trong `README.md`.
+> Main Class hiện tại là `app.Main`.
+
 Module dành cho nhân viên ghi nhận đánh giá/khiếu nại. Không có giao diện khách hàng tự gửi, đăng nhập, tra cứu khách hàng chung hoặc chức năng xóa phản hồi/lịch sử.
 
 ## 1. Chuẩn bị SQL Server (thực hiện thủ công)
@@ -32,7 +37,7 @@ Thiết lập biến qua Windows “Edit environment variables for your account�
 
 ## 3. Mở và sử dụng
 
-- NetBeans: Open Project `QLKhachSanTichHop`, Build rồi Run; main class vẫn là `Module_TaiChinh.view.MainFrame`.
+- Bản tích hợp hiện tại: mở project `QLDichVu_TaiChinh_PhanHoi`, Main Class `app.Main`.
 - Hoặc `java -jar dist/QLKhachSanTichHop.jar`, giữ `dist/lib` bên cạnh JAR.
 - Chọn “Quản lý phản hồi khách hàng” dưới “Quản lý dịch vụ”.
 - Tiếp nhận mới: nhập mã khách tối đa 20 ký tự, loại Đánh giá/Khiếu nại, nội dung tối đa 2000 ký tự, thời gian `dd/MM/yyyy HH:mm:ss`, người tiếp nhận tùy chọn tối đa 100 ký tự.

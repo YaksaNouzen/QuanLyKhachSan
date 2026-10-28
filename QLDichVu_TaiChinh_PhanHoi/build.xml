@@ -12,16 +12,6 @@
     <target name="-pre-init">
         <property name="platforms.default_platform.home" location="${java.home}"/>
     </target>
-    <target name="-post-jar">
-        <mkdir dir="${dist.dir}/lib"/>
-        <copy file="lib/mssql-jdbc-13.6.0.jre11.jar" todir="${dist.dir}/lib"/>
-        <jar destfile="${dist.jar}" update="true">
-            <manifest>
-                <attribute name="Main-Class" value="Module_TaiChinh.view.MainFrame"/>
-                <attribute name="Class-Path" value="lib/mssql-jdbc-13.6.0.jre11.jar"/>
-            </manifest>
-        </jar>
-    </target>
     <import file="nbproject/build-impl.xml"/>
     <!--
 

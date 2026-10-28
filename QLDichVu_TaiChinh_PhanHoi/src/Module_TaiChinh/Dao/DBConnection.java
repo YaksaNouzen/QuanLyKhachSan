@@ -1,44 +1,18 @@
-package Module_TaiChinh.Dao;
+package Module_TaiChinh.dao;
 
+import common.database.DatabaseConnection;
 import java.sql.Connection;
-import java.sql.DriverManager;
+import java.sql.SQLException;
 
-public class DBConnection {
+/** Cầu nối tương thích cho các DAO tài chính cũ. */
+public final class DBConnection {
+    private DBConnection() { }
 
     public static Connection getConnection() {
-
         try {
-
-            String url =
-            "jdbc:sqlserver://127.0.0.1:1434;"
-            + "databaseName=QLHDKhachSan;"
-            + "encrypt=true;"
-            + "trustServerCertificate=true";
-
-            String user = "sa";
-            String pass = "12345";
-
-            return DriverManager.getConnection(url, user, pass);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    
-    
-    }
-    
-    public static void main(String[] args){
-
-        Connection con = DBConnection.getConnection();
-
-        if (con != null) {
-            System.out.println("KET NOI DATABASE THANH CONG!");
-        } else {
-            System.out.println("KET NOI THAT BAI!");
+            return DatabaseConnection.getConnection();
+        } catch (SQLException ex) {
+            throw new IllegalStateException("Không kết nối được database QuanLyKhachSan.", ex);
         }
     }
 }
-    
-    

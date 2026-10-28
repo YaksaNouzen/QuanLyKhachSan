@@ -5,18 +5,51 @@
 1. Tạo database trống bằng `../database/FULL_DATABASE.sql` theo hướng dẫn ở
    `../database/README.md`.
 2. Mở chính thư mục `QLDichVu_TaiChinh_PhanHoi` bằng NetBeans và chạy project
-   với `Module_TaiChinh.view.MainFrame`.
-3. Khi mở Khách hàng, Đặt phòng, Phòng, Nhân sự hoặc Kho lần đầu, nhập JDBC URL
+   với Main Class `app.Main`.
+3. Khi mở module lần đầu, nhập JDBC URL
    tới database `QuanLyKhachSan` và tài khoản SQL Server trong hộp kết nối.
    Thông tin này chỉ lưu trong phiên chạy; không đưa mật khẩu vào source.
 4. Nếu chưa có tài khoản hệ thống nhân sự, mục Nhân viên sẽ mời tạo Admin đầu
    tiên, sau đó đăng nhập. Đây là tài khoản **ứng dụng**, khác với tài khoản
    **SQL Server** ở bước 3.
 
-Các module Tài chính, Dịch vụ và Phản hồi còn dùng kết nối database riêng từ
-bản Nhóm 5. Việc chuyển cả ba sang kết nối chung và phân quyền toàn hệ thống
-thuộc bước liên kết nghiệp vụ tiếp theo. Chưa dùng các script SQL đơn lẻ của
-từng nhóm để tạo lại database tích hợp.
+Cả 15 module dùng chung kết nối tới `QuanLyKhachSan`. Ba lớp `DBConnection`
+của Tài chính, Dịch vụ và Phản hồi chỉ còn là cầu nối tương thích với mã cũ;
+không tạo database riêng. Chưa dùng các script SQL đơn lẻ của từng nhóm để
+tạo lại database tích hợp.
+
+Trả phòng tự lập hóa đơn gồm tiền phòng và các dịch vụ đã ghi nhận cho đơn.
+Đổi phòng khi đang ở lập ngay hóa đơn cho chặng phòng cũ; đơn phòng mới sẽ được
+lập hóa đơn khi trả hoặc đổi tiếp. Tiền phòng theo giá chốt và số ngày đặt,
+không giảm khi trả sớm. Ngày đổi phòng thuộc chặng mới, không cộng hai lần;
+mỗi chặng không đổi phòng có tối thiểu một đêm. Nếu đơn đã có hóa đơn lập tay,
+chương trình giữ hóa đơn đó và không nhập tự động các dòng lần nữa. Không đổi
+schema. Chưa xác nhận chạy thực tế trên SQL Server tích hợp.
+
+Thử luồng tổng thể: tạo khách và phòng, đặt phòng, nhận phòng, chọn dịch vụ
+đang cung cấp rồi nhấn **Ghi nhận sử dụng** với mã đặt phòng, sau đó trả phòng.
+Mở **Quản lý hóa đơn** để tìm theo mã đặt phòng; xem các dòng phòng/dịch vụ ở
+**Chi tiết hóa đơn**, thanh toán và đối chiếu thống kê. Thử riêng đổi phòng:
+đơn cũ có hóa đơn ngay, đơn mới có hóa đơn khi kết thúc chặng mới. Không dùng
+các mã đặt phòng chưa ở hoặc đã trả để ghi dịch vụ.
+
+## Cấu trúc source hiện tại
+
+`src/app/Main.java` là điểm chạy duy nhất; `src/app/view/MainFrame.java` là
+cửa sổ điều hướng chung, không thuộc module Tài chính. `src/common` chứa các
+thành phần dùng chung. 15 module ngang cấp dưới `src`, tên ngắn theo chức năng:
+
+- Lễ tân: `Module_KhachHang`, `Module_DatPhong`, `Module_NhanTraPhong`.
+- Phòng: `Module_Phong`, `Module_BuongPhong`, `Module_BaoTri`.
+- Nhân sự: `Module_NhanVien`, `Module_CaLamViec`, `Module_TaiKhoanPhanQuyen`.
+- Kho: `Module_KhoVatTu`, `Module_NhaCungCap`, `Module_NhapHang`.
+- Tài chính và khách hàng: `Module_TaiChinh`, `Module_DichVu`,
+  `Module_PhanHoiKhachHang`.
+
+Mỗi module có `model`, `dao`, `service`, `controller`, `view`; module Tài khoản
+có thêm `util` cho đăng nhập. View của ba module Nhân sự đã đi qua Controller
+và Service thay vì gọi DAO trực tiếp. Chỉ di chuyển package/cấu trúc và thêm
+lớp chuyển tiếp; không đổi câu SQL hay schema trong lần sắp xếp này.
 
 ## Ghi chép của bản Nhóm 5 trước khi tích hợp
 

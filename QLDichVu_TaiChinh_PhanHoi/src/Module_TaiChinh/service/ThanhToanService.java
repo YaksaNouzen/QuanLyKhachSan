@@ -1,7 +1,7 @@
 
 package Module_TaiChinh.service;
 
-import Module_TaiChinh.Dao.ThanhToanDAO;
+import Module_TaiChinh.dao.ThanhToanDAO;
 import Module_TaiChinh.model.HoaDon;
 import Module_TaiChinh.model.ThanhToan;
 

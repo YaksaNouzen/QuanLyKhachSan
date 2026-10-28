@@ -1,4 +1,4 @@
-package Module_TaiChinh.Dao;
+package Module_TaiChinh.dao;
 
 import Module_TaiChinh.model.ThongKeTaiChinh;
 import Module_TaiChinh.model.ThongKeTheoNgay;

@@ -5,18 +5,18 @@ import java.awt.Component;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import javax.swing.SwingUtilities;
-import module.baotri.controller.BaoTriController;
-import module.baotri.dao.MemoryBaoTriDAO;
-import module.baotri.service.BaoTriService;
-import module.baotri.view.BaoTriPanel;
-import module.buongphong.controller.BuongPhongController;
-import module.buongphong.dao.MemoryVeSinhDAO;
-import module.buongphong.service.BuongPhongService;
-import module.buongphong.view.BuongPhongPanel;
-import module.phong.controller.PhongController;
-import module.phong.dao.MemoryPhongDAO;
-import module.phong.service.PhongService;
-import module.phong.view.PhongPanel;
+import Module_BaoTri.controller.BaoTriController;
+import Module_BaoTri.dao.MemoryBaoTriDAO;
+import Module_BaoTri.service.BaoTriService;
+import Module_BaoTri.view.BaoTriPanel;
+import Module_BuongPhong.controller.BuongPhongController;
+import Module_BuongPhong.dao.MemoryVeSinhDAO;
+import Module_BuongPhong.service.BuongPhongService;
+import Module_BuongPhong.view.BuongPhongPanel;
+import Module_Phong.controller.PhongController;
+import Module_Phong.dao.MemoryPhongDAO;
+import Module_Phong.service.PhongService;
+import Module_Phong.view.PhongPanel;
 
 public final class Nhom2UiRenderTest {
     public static void main(String[] args) throws Exception {
