@@ -1,15 +1,15 @@
 
 package QLDichVu.view;
 
-import QLDichVu.dao.DichVuDAO;
+import QLDichVu.controller.DichVuController;
 import QLDichVu.model.DichVu;
-import QLDichVu.dao.LoaiDichVuDAO;
+
 import QLDichVu.model.LoaiDichVu;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+
+
 import java.sql.SQLException;
 import java.util.List;
 
@@ -19,7 +19,7 @@ private void taiDanhSachLoai() {
     try {
         cboLoaiDV.removeAllItems();
 
-        for (LoaiDichVu loai : loaiDAO.getAll()) {
+        for (LoaiDichVu loai : controller.getDanhSachLoai()) {
             cboLoaiDV.addItem(loai);
         }
 
@@ -33,13 +33,13 @@ private void taiDanhSachLoai() {
         );
     }
 }
-    private final DichVuDAO dao = new DichVuDAO();
+    private final DichVuController controller;
 
     // Cac o nhap lieu
     private JTextField txtMaDV;
     private JComboBox<LoaiDichVu> cboLoaiDV;
 
-private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
+
     private JTextField txtTenDV;
     private JTextField txtDonGia;
     private JTextField txtDonViTinh;
@@ -57,6 +57,11 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
     private int maDVDangChon = -1;
 
     public DichVuPanel() {
+        this(new DichVuController());
+    }
+
+    public DichVuPanel(DichVuController controller) {
+        this.controller = java.util.Objects.requireNonNull(controller);
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(18, 20, 18, 20));
         setBackground(new Color(245, 247, 250));
@@ -229,7 +234,7 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
     // Doc du lieu tu database va hien thi len bang
     private void taiDanhSach() {
         try {
-            hienThiDanhSach(dao.getAll());
+            hienThiDanhSach(controller.getAll());
         } catch (SQLException e) {
             baoLoi("Khong the tai danh sach dich vu.", e);
         }
@@ -284,7 +289,7 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
         }
 
         try {
-            if (dao.restore(maDVDangChon)) {
+            if (controller.restore(maDVDangChon)) {
 
                 JOptionPane.showMessageDialog(
                         this,
@@ -352,56 +357,12 @@ for (int i = 0; i < cboLoaiDV.getItemCount(); i++) {
     // Lay thong tin tu form
     
 private DichVu layDuLieuForm() {
-
-    LoaiDichVu loai =
-            (LoaiDichVu) cboLoaiDV.getSelectedItem();
-
-    String ten = txtTenDV.getText().trim();
-    String gia = txtDonGia.getText().trim();
-    String donVi = txtDonViTinh.getText().trim();
-    String moTa = txtMoTa.getText().trim();
-
-    if (loai == null) {
-        throw new IllegalArgumentException(
-                "Hay chon loai dich vu."
-        );
-    }
-
-    if (ten.isEmpty() || gia.isEmpty() || donVi.isEmpty()) {
-        throw new IllegalArgumentException(
-                "Hay nhap day du ten dich vu, don gia "
-                + "va don vi tinh."
-        );
-    }
-
-    BigDecimal donGia;
-
-    try {
-        donGia = new BigDecimal(gia);
-    } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-                "Don gia phai la so hop le, vi du: 50000"
-        );
-    }
-
-    if (donGia.compareTo(BigDecimal.ZERO) < 0) {
-        throw new IllegalArgumentException(
-                "Don gia khong duoc am."
-        );
-    }
-
-    donGia = donGia.setScale(2, RoundingMode.HALF_UP);
-
-    return new DichVu(
-            loai.getMaLoaiDV(),
-            ten,
-            donGia,
-            donVi,
-            moTa,
-            chkTrangThai.isSelected()
-    );
+    return controller.taoDuLieu(
+            (LoaiDichVu) cboLoaiDV.getSelectedItem(),
+            txtTenDV.getText(), txtDonGia.getText(),
+            txtDonViTinh.getText(), txtMoTa.getText(),
+            chkTrangThai.isSelected());
 }
-
 
     // Them dich vu
     private void themDichVu() {
@@ -420,7 +381,7 @@ private DichVu layDuLieuForm() {
                 return;
             }
 
-            if (dao.insert(dv)) {
+            if (controller.insert(dv)) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Them dich vu thanh cong!"
@@ -457,7 +418,7 @@ private DichVu layDuLieuForm() {
             DichVu dv = layDuLieuForm();
             dv.setMaDV(maDVDangChon);
 
-            if (dao.update(dv)) {
+            if (controller.update(dv)) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Cap nhat dich vu thanh cong!"
@@ -508,7 +469,7 @@ private DichVu layDuLieuForm() {
         }
 
         try {
-            if (dao.delete(maDVDangChon)) {
+            if (controller.delete(maDVDangChon)) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Da ngung hoat dong dich vu."
@@ -538,7 +499,7 @@ private DichVu layDuLieuForm() {
             if (tuKhoa.isEmpty()) {
                 taiDanhSach();
             } else {
-                hienThiDanhSach(dao.searchByName(tuKhoa));
+                hienThiDanhSach(controller.searchByName(tuKhoa));
             }
 
             xoaTrangForm();
