@@ -1,16 +1,12 @@
 
 package QLDichVu.view;
 
-import QLDichVu.dao.DichVuDAO;
+import QLDichVu.controller.DichVuController;
 import QLDichVu.model.DichVu;
-import QLDichVu.dao.LoaiDichVuDAO;
 import QLDichVu.model.LoaiDichVu;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.sql.SQLException;
 import java.util.List;
 
 public class DichVuPanel extends JPanel {
@@ -19,27 +15,20 @@ private void taiDanhSachLoai() {
     try {
         cboLoaiDV.removeAllItems();
 
-        for (LoaiDichVu loai : loaiDAO.getAll()) {
+        for (LoaiDichVu loai : controller.layDanhSachLoai()) {
             cboLoaiDV.addItem(loai);
         }
 
-    } catch (SQLException e) {
-        JOptionPane.showMessageDialog(
-                this,
-                "Khong the tai danh sach loai dich vu: "
-                + e.getMessage(),
-                "Loi database",
-                JOptionPane.ERROR_MESSAGE
-        );
+    } catch (IllegalStateException e) {
+        baoLoi(e);
     }
 }
-    private final DichVuDAO dao = new DichVuDAO();
+    private final DichVuController controller;
 
     // Cac o nhap lieu
     private JTextField txtMaDV;
     private JComboBox<LoaiDichVu> cboLoaiDV;
 
-private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
     private JTextField txtTenDV;
     private JTextField txtDonGia;
     private JTextField txtDonViTinh;
@@ -57,6 +46,15 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
     private int maDVDangChon = -1;
 
     public DichVuPanel() {
+        this(new DichVuController());
+    }
+
+    public DichVuPanel(DichVuController controller) {
+        if (controller == null) {
+            throw new IllegalArgumentException(
+                    "Controller dich vu khong hop le.");
+        }
+        this.controller = controller;
         setLayout(new BorderLayout(12, 12));
         setBorder(BorderFactory.createEmptyBorder(18, 20, 18, 20));
         setBackground(new Color(245, 247, 250));
@@ -229,9 +227,9 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
     // Doc du lieu tu database va hien thi len bang
     private void taiDanhSach() {
         try {
-            hienThiDanhSach(dao.getAll());
-        } catch (SQLException e) {
-            baoLoi("Khong the tai danh sach dich vu.", e);
+            hienThiDanhSach(controller.layTatCa());
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -284,7 +282,7 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
         }
 
         try {
-            if (dao.restore(maDVDangChon)) {
+            if (controller.khoiPhuc(maDVDangChon)) {
 
                 JOptionPane.showMessageDialog(
                         this,
@@ -301,8 +299,10 @@ private final LoaiDichVuDAO loaiDAO = new LoaiDichVuDAO();
                 );
             }
 
-        } catch (SQLException e) {
-            baoLoi("Khoi phuc dich vu that bai.", e);
+        } catch (IllegalArgumentException e) {
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -349,65 +349,16 @@ for (int i = 0; i < cboLoaiDV.getItemCount(); i++) {
         );
     }
 
-    // Lay thong tin tu form
-    
-private DichVu layDuLieuForm() {
-
-    LoaiDichVu loai =
-            (LoaiDichVu) cboLoaiDV.getSelectedItem();
-
-    String ten = txtTenDV.getText().trim();
-    String gia = txtDonGia.getText().trim();
-    String donVi = txtDonViTinh.getText().trim();
-    String moTa = txtMoTa.getText().trim();
-
-    if (loai == null) {
-        throw new IllegalArgumentException(
-                "Hay chon loai dich vu."
-        );
-    }
-
-    if (ten.isEmpty() || gia.isEmpty() || donVi.isEmpty()) {
-        throw new IllegalArgumentException(
-                "Hay nhap day du ten dich vu, don gia "
-                + "va don vi tinh."
-        );
-    }
-
-    BigDecimal donGia;
-
-    try {
-        donGia = new BigDecimal(gia);
-    } catch (NumberFormatException e) {
-        throw new IllegalArgumentException(
-                "Don gia phai la so hop le, vi du: 50000"
-        );
-    }
-
-    if (donGia.compareTo(BigDecimal.ZERO) < 0) {
-        throw new IllegalArgumentException(
-                "Don gia khong duoc am."
-        );
-    }
-
-    donGia = donGia.setScale(2, RoundingMode.HALF_UP);
-
-    return new DichVu(
-            loai.getMaLoaiDV(),
-            ten,
-            donGia,
-            donVi,
-            moTa,
-            chkTrangThai.isSelected()
-    );
-}
-
-
     // Them dich vu
     private void themDichVu() {
 
         try {
-            DichVu dv = layDuLieuForm();
+            LoaiDichVu loai =
+                    (LoaiDichVu) cboLoaiDV.getSelectedItem();
+            if (loai == null) {
+                throw new IllegalArgumentException(
+                        "Hay chon loai dich vu.");
+            }
 
             int luaChon = JOptionPane.showConfirmDialog(
                     this,
@@ -420,7 +371,13 @@ private DichVu layDuLieuForm() {
                 return;
             }
 
-            if (dao.insert(dv)) {
+            if (controller.themDichVu(
+                    loai.getMaLoaiDV(),
+                    txtTenDV.getText(),
+                    txtDonGia.getText(),
+                    txtDonViTinh.getText(),
+                    txtMoTa.getText(),
+                    chkTrangThai.isSelected())) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Them dich vu thanh cong!"
@@ -431,14 +388,9 @@ private DichVu layDuLieuForm() {
             }
 
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    e.getMessage(),
-                    "Du lieu khong hop le",
-                    JOptionPane.WARNING_MESSAGE
-            );
-        } catch (SQLException e) {
-            baoLoi("Them dich vu that bai.", e);
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -454,10 +406,21 @@ private DichVu layDuLieuForm() {
         }
 
         try {
-            DichVu dv = layDuLieuForm();
-            dv.setMaDV(maDVDangChon);
+            LoaiDichVu loai =
+                    (LoaiDichVu) cboLoaiDV.getSelectedItem();
+            if (loai == null) {
+                throw new IllegalArgumentException(
+                        "Hay chon loai dich vu.");
+            }
 
-            if (dao.update(dv)) {
+            if (controller.capNhatDichVu(
+                    maDVDangChon,
+                    loai.getMaLoaiDV(),
+                    txtTenDV.getText(),
+                    txtDonGia.getText(),
+                    txtDonViTinh.getText(),
+                    txtMoTa.getText(),
+                    chkTrangThai.isSelected())) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Cap nhat dich vu thanh cong!"
@@ -473,14 +436,9 @@ private DichVu layDuLieuForm() {
             }
 
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(
-                    this,
-                    e.getMessage(),
-                    "Du lieu khong hop le",
-                    JOptionPane.WARNING_MESSAGE
-            );
-        } catch (SQLException e) {
-            baoLoi("Cap nhat dich vu that bai.", e);
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -508,7 +466,7 @@ private DichVu layDuLieuForm() {
         }
 
         try {
-            if (dao.delete(maDVDangChon)) {
+            if (controller.ngungHoatDong(maDVDangChon)) {
                 JOptionPane.showMessageDialog(
                         this,
                         "Da ngung hoat dong dich vu."
@@ -524,8 +482,10 @@ private DichVu layDuLieuForm() {
                 );
             }
 
-        } catch (SQLException e) {
-            baoLoi("Ngung hoat dong dich vu that bai.", e);
+        } catch (IllegalArgumentException e) {
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -535,16 +495,14 @@ private DichVu layDuLieuForm() {
         String tuKhoa = txtTimKiem.getText().trim();
 
         try {
-            if (tuKhoa.isEmpty()) {
-                taiDanhSach();
-            } else {
-                hienThiDanhSach(dao.searchByName(tuKhoa));
-            }
+            hienThiDanhSach(controller.timTheoTen(tuKhoa));
 
             xoaTrangForm();
 
-        } catch (SQLException e) {
-            baoLoi("Tim kiem dich vu that bai.", e);
+        } catch (IllegalArgumentException e) {
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
         }
     }
 
@@ -571,10 +529,19 @@ private DichVu layDuLieuForm() {
         return value == null ? "" : value.toString();
     }
 
-    private void baoLoi(String thongBao, SQLException e) {
+    private void baoDuLieuKhongHopLe(IllegalArgumentException e) {
         JOptionPane.showMessageDialog(
                 this,
-                thongBao + "\nChi tiet: " + e.getMessage(),
+                e.getMessage(),
+                "Du lieu khong hop le",
+                JOptionPane.WARNING_MESSAGE
+        );
+    }
+
+    private void baoLoi(IllegalStateException e) {
+        JOptionPane.showMessageDialog(
+                this,
+                e.getMessage(),
                 "Loi database",
                 JOptionPane.ERROR_MESSAGE
         );

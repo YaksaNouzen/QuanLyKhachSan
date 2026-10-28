@@ -23,13 +23,13 @@ Giữ thư mục dist/lib bên cạnh file JAR khi sao chép bản chạy.
 
 ## Cấu trúc
 - src/Module_TaiChinh: source tài chính; chỉ MainFrame thay đổi để thêm điều hướng Dịch vụ.
-- src/QLDichVu: DBConnection, dao, model giữ nguyên; view/DichVuPanel được đồng bộ giao diện.
+- src/QLDichVu: DBConnection, model, DAO, Service, Controller và view của module Dịch vụ.
 - nbproject, build.xml, manifest.mf: cấu hình NetBeans/Ant.
 - lib: Microsoft JDBC driver 13.6.0, dùng chung cho hai kết nối.
 - dist: JAR chạy ứng dụng và lib kèm theo.
 - legacy: cửa sổ MainForm cũ và đoạn khởi chạy riêng của DichVuPanel, lưu ngoài source biên dịch.
 - verification: kiểm tra ngoại tuyến, ảnh giao diện và đối chiếu file gốc.
-- test: thư mục kiểm thử chuẩn của NetBeans, hiện chưa có test framework.
+- test/QLDichVu/DichVuLayerTest.java: kiểm thử offline luồng Controller - Service - DAO giả, không ghi SQL Server.
 
 Các main kiểm tra kết nối trong DBConnection giữ nguyên để không sửa lớp kết nối. Điểm khởi chạy ứng dụng được cấu hình và đóng gói duy nhất là MainFrame. Các Test*.java cũ được giữ tại project tài chính gốc, không đưa vào bản phân phối.
 
@@ -37,7 +37,7 @@ Các main kiểm tra kết nối trong DBConnection giữ nguyên để không s
 - MainFrame.java: import và trường DichVuPanel, nút sidebar, nhánh điều hướng, hàm mở card DICHVU.
 - DichVuPanel.java: phần dựng UI, helper trang trí, màu/font/bố cục; bỏ điểm chạy JFrame độc lập khỏi source ứng dụng và lưu lại ở legacy.
 - Cấu hình project: tên, main class, JDK mặc định và đường dẫn JDBC tương đối; build.xml hỗ trợ JDK hiện hành và đóng gói dist/lib.
-- Không thay đổi SQL, Model, DAO, Service, Controller hoặc quy tắc nghiệp vụ.
+- Không thay đổi SQL, Model hoặc DAO. Bổ sung Service và Controller còn thiếu cho Dịch vụ; DichVuPanel không gọi DAO trực tiếp nữa.
 - Chỉ có lọc/tìm theo tên dịch vụ như source gốc; không thêm bộ lọc mới.
 
 ## Kiểm chứng ngày 27/10/2026
@@ -56,3 +56,8 @@ Chạy tại thư mục project, không thêm lib JDBC vào classpath sau:
     java -cp "build/classes;verification" IntegrationSmokeTest
 
 Kiểm tra tạo cửa sổ Swing không hiển thị và kết xuất ảnh; cần môi trường desktop Java (không headless). Các câu SQL ghi bị chặn trong fake JDBC. Kiểm tra không xác nhận CRUD database thật.
+
+## Kiểm thử tầng Dịch vụ
+`DichVuLayerTest` kiểm tra tải loại, thêm, sửa, tìm kiếm, ngừng/khôi phục,
+chuẩn hóa dữ liệu, làm tròn `DECIMAL(18,2)` và các trường hợp dữ liệu sai.
+DAO giả được dùng để bài kiểm thử chạy độc lập với SQL Server.
