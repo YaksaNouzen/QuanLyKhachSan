@@ -24,7 +24,7 @@ Tren database thu nghiem, chay `sql/patches/N2_001_buong_phong_va_bao_tri.sql` r
 - `module.buongphong`: phan cong, bat dau, xac nhan hoan thanh va huy viec don.
 - `module.baotri`: bao hong, bat dau sua, ghi chi phi/ket qua, hoan tat va huy phieu chua sua.
 - Khong tao/huy booking, check-in/check-out hay doi phong. Hai thao tac tac nghiep doc `DatPhong` de chan don/sua khi phong dang co khach hoac con booking theo cac guard da dinh.
-- Tab ho so, tien nghi, review, yeu cau va phan anh duoc giao module khac theo phan cong cho repo nhom nay; `ModulePhong-current` cua repo rieng van giu pham vi/hop dong cu.
+- Tab ho so, tien nghi, review, yeu cau va phan anh duoc giao module khac theo phan cong cho repo nhom nay.
 
 ## Cau truc
 
