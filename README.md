@@ -6,3 +6,6 @@ nhóm 5 gồm Tài chính, Dịch vụ và Phản hồi; module Dịch vụ đã
 
 Xem [INTEGRATION_PLAN.md](INTEGRATION_PLAN.md) trước khi đưa thêm code từ
 các nhánh thành viên vào.
+
+Kết quả đối chiếu SQL của năm nhóm và các quyết định còn chờ xác nhận nằm tại
+[DATABASE_AUDIT.md](DATABASE_AUDIT.md).

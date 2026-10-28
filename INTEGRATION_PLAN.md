@@ -52,6 +52,8 @@ Nhánh `feature/nhom5-tai-chinh-dich-vu-phan-hoi` là bản nhóm 5 cũ và khô
 - Lập danh sách bảng, khóa chính, khóa ngoại và database name của năm nhóm.
 - Phát hiện bảng trùng tên hoặc quan hệ chưa tương thích.
 - Đề xuất một script tổng nhưng chỉ sửa sau khi được xác nhận.
+- Kết quả: xem `DATABASE_AUDIT.md`; chưa tạo hoặc chạy master SQL khi bốn
+  quyết định schema cuối tài liệu chưa được xác nhận.
 
 ### Bước 3 - Nhập nhóm 1 và nhóm 2
 
