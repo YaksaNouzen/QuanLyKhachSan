@@ -3,10 +3,16 @@ package module.phong.view;
 import common.ui.HotelTheme;
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,68 +29,93 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import module.phong.controller.PhongController;
 import module.phong.model.LoaiPhong;
 import module.phong.model.Phong;
 import module.phong.model.Tang;
 import module.phong.model.TrangThaiPhong;
+import static module.phong.model.TrangThaiPhong.BAO_TRI;
+import static module.phong.model.TrangThaiPhong.DA_DAT;
+import static module.phong.model.TrangThaiPhong.DANG_DON;
+import static module.phong.model.TrangThaiPhong.DANG_SU_DUNG;
 import static module.phong.model.TrangThaiPhong.TRONG;
 
+/**
+ * Giao dien Quan ly phong hien dai, truc quan theo chuan Java Nang Cao.
+ */
 public class PhongPanel extends JPanel {
     private final PhongController controller;
-    private final JTabbedPane tabPhong = new JTabbedPane();
-    private final JPanel pnlPhong = new JPanel(new BorderLayout(10, 10));
-    private final JPanel pnlLoaiPhong = new JPanel(new BorderLayout(10, 10));
-    private final JPanel pnlTang = new JPanel(new BorderLayout(10, 10));
-    private final JPanel pnlSoDoPhong = new JPanel(new GridLayout(0, 4, 12, 12));
+    private final JTabbedPane subTabs = new JTabbedPane();
+
+    // Cac panel con
+    private final JPanel pnlSoDoWrap = new JPanel(new BorderLayout(0, 10));
+    private final JPanel pnlSoDoGrid = new JPanel(new GridLayout(0, 4, 14, 14));
+    private final JPanel pnlDanhSach = new JPanel(new BorderLayout(0, 12));
+    private final JPanel pnlLoaiPhong = new JPanel(new BorderLayout(0, 12));
+    private final JPanel pnlTang = new JPanel(new BorderLayout(0, 12));
+
+    // Models & Tables
     private final DefaultTableModel roomModel = taoModel(
-            "Ma phong", "So phong", "Loai phong", "Tang", "Gia/dem", "Trang thai", "Ngung SD");
+            "Mã phòng", "Số phòng", "Loại phòng", "Tầng", "Giá niêm yết/đêm", "Trạng thái", "Tình trạng");
     private final DefaultTableModel typeModel = taoModel(
-            "Ma loai", "Ten loai", "Suc chua", "Gia/dem");
-    private final DefaultTableModel floorModel = taoModel("Ma tang", "Ten tang", "So phong");
+            "Mã loại", "Tên loại phòng", "Sức chứa tối đa", "Giá niêm yết/ngày");
+    private final DefaultTableModel floorModel = taoModel(
+            "Mã tầng", "Tên tầng", "Số phòng hiện có");
+
     private final JTable tblPhong = new JTable(roomModel);
     private final JTable tblLoai = new JTable(typeModel);
     private final JTable tblTang = new JTable(floorModel);
+
+    // Bo loc chung
     private final JComboBox<Choice> cboLocTang = new JComboBox<>();
     private final JComboBox<Object> cboLocTrangThai = new JComboBox<>();
-    private final JLabel lblTongQuan = new JLabel("Dang tai du lieu...");
+    private final JTextField txtTimKiem = new JTextField(14);
+
+    // KPI Cards
+    private final JLabel lblKpiTongPhong = new JLabel("0", SwingConstants.LEFT);
+    private final JLabel lblKpiSanSang = new JLabel("0", SwingConstants.LEFT);
+    private final JLabel lblKpiDangDung = new JLabel("0", SwingConstants.LEFT);
+    private final JLabel lblKpiCanXuLy = new JLabel("0", SwingConstants.LEFT);
+
     private final List<JButton> actionButtons = new ArrayList<>();
     private boolean loading;
 
     public PhongPanel(PhongController controller) {
         this.controller = controller;
         setLayout(new BorderLayout(0, 14));
-        setBorder(BorderFactory.createEmptyBorder(20, 22, 20, 22));
+        setBackground(HotelTheme.BACKGROUND);
+        setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
 
-        JPanel header = new JPanel(new BorderLayout(0, 8));
-        JLabel title = new JLabel("Quan ly phong");
-        title.setFont(new Font("SansSerif", Font.BOLD, 25));
-        title.setForeground(HotelTheme.INK);
-        header.add(title, BorderLayout.NORTH);
-        header.add(lblTongQuan, BorderLayout.CENTER);
-        JButton btnTaiLai = nut("Tai lai", controller::refresh);
-        header.add(btnTaiLai, BorderLayout.EAST);
-        add(header, BorderLayout.NORTH);
+        // Top Dashboard
+        add(taoTopDashboard(), BorderLayout.NORTH);
 
-        taoTabPhong();
+        // Sub Tabs
+        taoTabSoDo();
+        taoTabDanhSach();
         taoTabLoai();
         taoTabTang();
-        taoTabSoDo();
-        tabPhong.addTab("Phong", pnlPhong);
-        tabPhong.addTab("Loai phong", pnlLoaiPhong);
-        tabPhong.addTab("Tang", pnlTang);
-        tabPhong.addTab("So do phong", new JScrollPane(pnlSoDoPhong));
-        add(tabPhong, BorderLayout.CENTER);
 
+        subTabs.setFont(HotelTheme.FONT_BOLD);
+        subTabs.setBackground(HotelTheme.BACKGROUND);
+        subTabs.setOpaque(false);
+        subTabs.addTab("Sơ đồ phòng trực quan", pnlSoDoWrap);
+        subTabs.addTab("Danh sách phòng", pnlDanhSach);
+        subTabs.addTab("Hạng loại phòng", pnlLoaiPhong);
+        subTabs.addTab("Quản lý tầng", pnlTang);
+        add(subTabs, BorderLayout.CENTER);
+
+        // Lang nghe controller
         controller.onChange(this::taiLaiGiaoDien);
         controller.onError(message -> JOptionPane.showMessageDialog(
-                this, message, "Kiem tra thong tin", JOptionPane.WARNING_MESSAGE));
+                this, message, "Thông báo kiểm tra", JOptionPane.WARNING_MESSAGE));
         controller.onBusy(value -> {
             actionButtons.forEach(button -> button.setEnabled(!value));
-            setCursor(java.awt.Cursor.getPredefinedCursor(
-                    value ? java.awt.Cursor.WAIT_CURSOR : java.awt.Cursor.DEFAULT_CURSOR));
+            setCursor(Cursor.getPredefinedCursor(value ? Cursor.WAIT_CURSOR : Cursor.DEFAULT_CURSOR));
         });
+
         controller.refresh();
     }
 
@@ -92,79 +123,276 @@ public class PhongPanel extends JPanel {
         controller.refresh();
     }
 
-    private void taoTabPhong() {
-        cboLocTang.addItem(new Choice("", "Tat ca tang"));
-        cboLocTrangThai.addItem("Tat ca trang thai");
-        for (TrangThaiPhong state : TrangThaiPhong.values()) cboLocTrangThai.addItem(state);
-        JPanel filters = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        filters.add(new JLabel("Tang:"));
-        filters.add(cboLocTang);
-        filters.add(new JLabel("Trang thai:"));
-        filters.add(cboLocTrangThai);
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        actions.add(nut("Them phong", () -> suaPhong(null)));
-        actions.add(nut("Cap nhat", this::capNhatPhong));
-        actions.add(nut("Ngung su dung", this::ngungPhong));
-        actions.add(nut("Tai lai", controller::refresh));
-        JPanel top = new JPanel(new BorderLayout());
-        top.add(filters, BorderLayout.NORTH);
-        top.add(actions, BorderLayout.SOUTH);
-        pnlPhong.add(top, BorderLayout.NORTH);
+    /**
+     * Dashboard tren cung gom tieu de va 4 KPI cards.
+     */
+    private JPanel taoTopDashboard() {
+        JPanel container = new JPanel(new BorderLayout(0, 12));
+        container.setOpaque(false);
+
+        // Row 1: Tieu de va mo ta ngan
+        JPanel titleBar = new JPanel(new BorderLayout());
+        titleBar.setOpaque(false);
+        JLabel title = new JLabel("Quản Lý Phòng Nghỉ");
+        title.setFont(HotelTheme.FONT_HEADER);
+        title.setForeground(HotelTheme.TITLE_BLUE);
+
+        JLabel sub = new JLabel("Theo dõi tình trạng phòng thực tế, quản lý phân hạng và cơ cấu phòng");
+        sub.setFont(HotelTheme.FONT_SMALL);
+        sub.setForeground(HotelTheme.TEXT_SECONDARY);
+
+        JPanel textPanel = new JPanel(new GridLayout(2, 1, 0, 2));
+        textPanel.setOpaque(false);
+        textPanel.add(title);
+        textPanel.add(sub);
+        titleBar.add(textPanel, BorderLayout.WEST);
+
+        JButton btnTaiLai = nut("Tải lại dữ liệu", HotelTheme.ButtonType.SECONDARY, controller::refresh);
+        titleBar.add(btnTaiLai, BorderLayout.EAST);
+        container.add(titleBar, BorderLayout.NORTH);
+
+        // Row 2: 4 The thong ke nhanh
+        JPanel kpiGrid = new JPanel(new GridLayout(1, 4, 14, 0));
+        kpiGrid.setOpaque(false);
+
+        kpiGrid.add(taoTheKpi("Tổng số phòng", lblKpiTongPhong, "Tất cả phòng trong hệ thống", HotelTheme.PRIMARY_BLUE));
+        kpiGrid.add(taoTheKpi("Phòng sẵn sàng", lblKpiSanSang, "Trống và sẵn sàng đón khách", HotelTheme.SUCCESS_TEXT));
+        kpiGrid.add(taoTheKpi("Đang có khách / Đã đặt", lblKpiDangDung, "Phòng đang lưu trú hoặc giữ chỗ", HotelTheme.PURPLE_TEXT));
+        kpiGrid.add(taoTheKpi("Đang dọn / Bảo trì", lblKpiCanXuLy, "Cần dọn dẹp hoặc sửa chữa", HotelTheme.WARNING_TEXT));
+
+        container.add(kpiGrid, BorderLayout.SOUTH);
+        return container;
+    }
+
+    private JPanel taoTheKpi(String tieuDe, JLabel lblGiaTri, String moTa, Color accentColor) {
+        JPanel card = new JPanel(new BorderLayout(0, 4));
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                new HotelTheme.RoundedBorder(HotelTheme.BORDER, 1, 8),
+                BorderFactory.createEmptyBorder(12, 16, 12, 16)
+        ));
+
+        JLabel title = new JLabel(tieuDe);
+        title.setFont(HotelTheme.FONT_SMALL);
+        title.setForeground(HotelTheme.TEXT_SECONDARY);
+
+        lblGiaTri.setFont(new Font("Segoe UI", Font.BOLD, 22));
+        lblGiaTri.setForeground(accentColor);
+
+        JLabel desc = new JLabel(moTa);
+        desc.setFont(new Font("Segoe UI", Font.PLAIN, 11));
+        desc.setForeground(HotelTheme.TEXT_MUTED);
+
+        card.add(title, BorderLayout.NORTH);
+        card.add(lblGiaTri, BorderLayout.CENTER);
+        card.add(desc, BorderLayout.SOUTH);
+        return card;
+    }
+
+    /**
+     * Tab Sơ đồ phòng trực quan.
+     */
+    private void taoTabSoDo() {
+        pnlSoDoWrap.setOpaque(false);
+        pnlSoDoWrap.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        // Thanh chu thich mau sac (Legend)
+        JPanel legendBar = new JPanel(new FlowLayout(FlowLayout.LEFT, 16, 6));
+        legendBar.setOpaque(false);
+        legendBar.add(taoLegendPill("Sẵn sàng", HotelTheme.SUCCESS_BG, HotelTheme.SUCCESS_TEXT));
+        legendBar.add(taoLegendPill("Đang có khách", HotelTheme.INFO_BG, HotelTheme.INFO_TEXT));
+        legendBar.add(taoLegendPill("Đã đặt trước", HotelTheme.PURPLE_BG, HotelTheme.PURPLE_TEXT));
+        legendBar.add(taoLegendPill("Đang dọn dẹp", HotelTheme.WARNING_BG, HotelTheme.WARNING_TEXT));
+        legendBar.add(taoLegendPill("Đang bảo trì", HotelTheme.DANGER_BG, HotelTheme.DANGER_TEXT));
+        legendBar.add(taoLegendPill("Ngừng sử dụng", HotelTheme.GRAY_BG, HotelTheme.GRAY_TEXT));
+
+        pnlSoDoWrap.add(taoThe(legendBar), BorderLayout.NORTH);
+
+        pnlSoDoGrid.setOpaque(false);
+        pnlSoDoGrid.setBorder(BorderFactory.createEmptyBorder(12, 6, 12, 6));
+
+        JScrollPane scroll = new JScrollPane(pnlSoDoGrid);
+        scroll.setBorder(BorderFactory.createEmptyBorder());
+        scroll.getViewport().setBackground(HotelTheme.BACKGROUND);
+        scroll.getVerticalScrollBar().setUnitIncrement(16);
+
+        pnlSoDoWrap.add(taoThe(scroll), BorderLayout.CENTER);
+    }
+
+    private JLabel taoLegendPill(String text, Color bg, Color fg) {
+        JLabel lbl = new JLabel("● " + text);
+        lbl.setFont(HotelTheme.FONT_BADGE);
+        lbl.setOpaque(true);
+        lbl.setBackground(bg);
+        lbl.setForeground(fg);
+        lbl.setBorder(BorderFactory.createEmptyBorder(4, 10, 4, 10));
+        return lbl;
+    }
+
+    /**
+     * Tab Danh sách phòng dạng bảng và thanh công cụ.
+     */
+    private void taoTabDanhSach() {
+        pnlDanhSach.setOpaque(false);
+        pnlDanhSach.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        // Bo loc va tim kiem nam trong the rieng.
+        JPanel leftFilters = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 4));
+        leftFilters.setOpaque(false);
+
+        leftFilters.add(new JLabel("Tìm số phòng:"));
+        txtTimKiem.setPreferredSize(new Dimension(130, 32));
+        txtTimKiem.getDocument().addDocumentListener(new DocumentListener() {
+            public void insertUpdate(DocumentEvent e) { locDanhSach(); }
+            public void removeUpdate(DocumentEvent e) { locDanhSach(); }
+            public void changedUpdate(DocumentEvent e) { locDanhSach(); }
+        });
+        leftFilters.add(txtTimKiem);
+
+        leftFilters.add(new JLabel("Tầng:"));
+        cboLocTang.setPreferredSize(new Dimension(150, 32));
+        leftFilters.add(cboLocTang);
+
+        leftFilters.add(new JLabel("Trạng thái:"));
+        cboLocTrangThai.setPreferredSize(new Dimension(170, 32));
+        leftFilters.add(cboLocTrangThai);
+
+        // Nut hanh dong
+        JPanel rightActions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        rightActions.setOpaque(false);
+
+        JButton btnThem = nut("+ Thêm phòng", HotelTheme.ButtonType.SUCCESS, () -> suaPhong(null));
+        JButton btnSua = nut("Cập nhật", HotelTheme.ButtonType.WARNING, this::capNhatPhong);
+        JButton btnNgung = nut("Ngừng sử dụng", HotelTheme.ButtonType.DANGER, this::ngungPhong);
+
+        rightActions.add(btnThem);
+        rightActions.add(btnSua);
+        rightActions.add(btnNgung);
+
+        pnlDanhSach.add(taoThe(leftFilters), BorderLayout.NORTH);
+
         cauHinhBang(tblPhong);
-        pnlPhong.add(new JScrollPane(tblPhong), BorderLayout.CENTER);
+        JScrollPane roomScroll = new JScrollPane(tblPhong);
+        roomScroll.setBorder(BorderFactory.createEmptyBorder());
+        roomScroll.getViewport().setBackground(Color.WHITE);
+        pnlDanhSach.add(taoThe(roomScroll), BorderLayout.CENTER);
+        pnlDanhSach.add(taoThe(rightActions), BorderLayout.SOUTH);
+
         cboLocTang.addActionListener(event -> locPhongTheoBoLoc());
         cboLocTrangThai.addActionListener(event -> locPhongTheoBoLoc());
     }
 
+    /**
+     * Tab Hạng loại phòng.
+     */
     private void taoTabLoai() {
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        actions.add(nut("Them loai", () -> suaLoai(null)));
-        actions.add(nut("Cap nhat", this::capNhatLoai));
-        actions.add(nut("Xoa loai", this::xoaLoai));
-        pnlLoaiPhong.add(actions, BorderLayout.NORTH);
+        pnlLoaiPhong.setOpaque(false);
+        pnlLoaiPhong.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        JLabel info = new JLabel("Danh sách các hạng phòng, sức chứa và đơn giá niêm yết theo ngày");
+        info.setFont(HotelTheme.FONT_SMALL);
+        info.setForeground(HotelTheme.TEXT_SECONDARY);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        actions.setOpaque(false);
+        actions.add(nut("+ Thêm hạng phòng", HotelTheme.ButtonType.SUCCESS, () -> suaLoai(null)));
+        actions.add(nut("Cập nhật", HotelTheme.ButtonType.WARNING, this::capNhatLoai));
+        actions.add(nut("Xóa hạng phòng", HotelTheme.ButtonType.DANGER, this::xoaLoai));
+
+        pnlLoaiPhong.add(taoThe(info), BorderLayout.NORTH);
+
         cauHinhBang(tblLoai);
-        pnlLoaiPhong.add(new JScrollPane(tblLoai), BorderLayout.CENTER);
+        JScrollPane typeScroll = new JScrollPane(tblLoai);
+        typeScroll.setBorder(BorderFactory.createEmptyBorder());
+        typeScroll.getViewport().setBackground(Color.WHITE);
+        pnlLoaiPhong.add(taoThe(typeScroll), BorderLayout.CENTER);
+        pnlLoaiPhong.add(taoThe(actions), BorderLayout.SOUTH);
     }
 
+    /**
+     * Tab Quản lý tầng.
+     */
     private void taoTabTang() {
-        JPanel actions = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        actions.add(nut("Them tang", () -> suaTang(null)));
-        actions.add(nut("Cap nhat", this::capNhatTang));
-        actions.add(nut("Xoa tang", this::xoaTang));
-        pnlTang.add(actions, BorderLayout.NORTH);
+        pnlTang.setOpaque(false);
+        pnlTang.setBorder(BorderFactory.createEmptyBorder(10, 0, 0, 0));
+
+        JLabel info = new JLabel("Danh mục các tầng và tổng số phòng bố trí trên từng tầng");
+        info.setFont(HotelTheme.FONT_SMALL);
+        info.setForeground(HotelTheme.TEXT_SECONDARY);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 4));
+        actions.setOpaque(false);
+        actions.add(nut("+ Thêm tầng mới", HotelTheme.ButtonType.SUCCESS, () -> suaTang(null)));
+        actions.add(nut("Cập nhật", HotelTheme.ButtonType.WARNING, this::capNhatTang));
+        actions.add(nut("Xóa tầng", HotelTheme.ButtonType.DANGER, this::xoaTang));
+
+        pnlTang.add(taoThe(info), BorderLayout.NORTH);
+
         cauHinhBang(tblTang);
-        pnlTang.add(new JScrollPane(tblTang), BorderLayout.CENTER);
+        JScrollPane floorScroll = new JScrollPane(tblTang);
+        floorScroll.setBorder(BorderFactory.createEmptyBorder());
+        floorScroll.getViewport().setBackground(Color.WHITE);
+        pnlTang.add(taoThe(floorScroll), BorderLayout.CENTER);
+        pnlTang.add(taoThe(actions), BorderLayout.SOUTH);
     }
 
-    private void taoTabSoDo() {
-        pnlSoDoPhong.setBorder(BorderFactory.createEmptyBorder(12, 4, 12, 4));
-        cboLocTang.setPreferredSize(new Dimension(160, 28));
-        cboLocTrangThai.setPreferredSize(new Dimension(180, 28));
-        pnlSoDoPhong.setToolTipText("Mau the hien thi trang thai hien tai cua phong.");
+    private JPanel taoThe(JComponent noiDung) {
+        JPanel card = new JPanel(new BorderLayout());
+        card.setBackground(Color.WHITE);
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(HotelTheme.BORDER),
+                BorderFactory.createEmptyBorder(10, 12, 10, 12)));
+        card.add(noiDung, BorderLayout.CENTER);
+        return card;
     }
 
     private void taiLaiGiaoDien() {
         loading = true;
         String tangCu = maDangChon(cboLocTang);
         cboLocTang.removeAllItems();
-        cboLocTang.addItem(new Choice("", "Tat ca tang"));
-        for (Tang tang : controller.floors())
+        cboLocTang.addItem(new Choice("", "Tất cả tầng"));
+        for (Tang tang : controller.floors()) {
             cboLocTang.addItem(new Choice(tang.maTang(), tang.tenTang()));
+        }
         chonTang(tangCu);
+
+        if (cboLocTrangThai.getItemCount() == 0) {
+            cboLocTrangThai.addItem("Tất cả trạng thái");
+            for (TrangThaiPhong state : TrangThaiPhong.values()) {
+                cboLocTrangThai.addItem(state);
+            }
+        }
         loading = false;
+
         capNhatBangLoai();
         capNhatBangTang();
         locDanhSach();
         capNhatSoDo();
-        long trong = controller.rooms().stream().filter(p -> p.trangThai() == TRONG).count();
-        lblTongQuan.setText(controller.rooms().size() + " phong, " + trong
-                + " phong trong, " + controller.floors().size() + " tang");
+        capNhatKpi();
+    }
+
+    private void capNhatKpi() {
+        int tong = controller.rooms().size();
+        long sanSang = controller.rooms().stream()
+                .filter(p -> !p.ngungSuDung() && p.trangThai() == TRONG).count();
+        long dangDung = controller.rooms().stream()
+                .filter(p -> !p.ngungSuDung() && (p.trangThai() == DANG_SU_DUNG || p.trangThai() == DA_DAT)).count();
+        long canXuLy = controller.rooms().stream()
+                .filter(p -> p.trangThai() == DANG_DON || p.trangThai() == BAO_TRI).count();
+
+        lblKpiTongPhong.setText(tong + " phòng");
+        lblKpiSanSang.setText(sanSang + " phòng");
+        lblKpiDangDung.setText(dangDung + " phòng");
+        lblKpiCanXuLy.setText(canXuLy + " phòng");
     }
 
     private void chonTang(String maTang) {
         for (int i = 0; i < cboLocTang.getItemCount(); i++) {
             Choice choice = cboLocTang.getItemAt(i);
-            if (choice.id().equals(maTang)) cboLocTang.setSelectedIndex(i);
+            if (choice.id().equals(maTang)) {
+                cboLocTang.setSelectedIndex(i);
+                return;
+            }
         }
     }
 
@@ -173,14 +401,31 @@ public class PhongPanel extends JPanel {
         roomModel.setRowCount(0);
         String maTang = maDangChon(cboLocTang);
         Object selected = cboLocTrangThai.getSelectedItem();
+        String keyword = txtTimKiem.getText().trim().toLowerCase();
+
         for (Phong phong : controller.rooms()) {
             if (!maTang.isBlank() && !maTang.equals(phong.maTang())) continue;
             if (selected instanceof TrangThaiPhong state && state != phong.trangThai()) continue;
+            if (!keyword.isEmpty() && !phong.soPhong().toLowerCase().contains(keyword)
+                    && !phong.maPhong().toLowerCase().contains(keyword)) {
+                continue;
+            }
+
             LoaiPhong loai = controller.type(phong.maLoaiPhong());
             Tang tang = controller.floor(phong.maTang());
-            BigDecimal gia = phong.giaPhong() == null ? loai.giaTheoNgay() : phong.giaPhong();
-            roomModel.addRow(new Object[] {phong.maPhong(), phong.soPhong(), loai.tenLoai(),
-                    tang.tenTang(), gia, phong.trangThai(), phong.ngungSuDung() ? "Co" : "Khong"});
+            BigDecimal gia = phong.giaPhong() == null ? (loai == null ? BigDecimal.ZERO : loai.giaTheoNgay()) : phong.giaPhong();
+            String tenLoai = loai == null ? phong.maLoaiPhong() : loai.tenLoai();
+            String tenTang = tang == null ? phong.maTang() : tang.tenTang();
+
+            roomModel.addRow(new Object[] {
+                    phong.maPhong(),
+                    phong.soPhong(),
+                    tenLoai,
+                    tenTang,
+                    gia,
+                    phong.trangThai().name(),
+                    phong.ngungSuDung() ? "Ngừng SD" : "Hoạt động"
+            });
         }
     }
 
@@ -191,9 +436,14 @@ public class PhongPanel extends JPanel {
 
     private void capNhatBangLoai() {
         typeModel.setRowCount(0);
-        for (LoaiPhong loai : controller.types())
-            typeModel.addRow(new Object[] {loai.maLoaiPhong(), loai.tenLoai(),
-                    loai.soNguoiToiDa(), loai.giaTheoNgay()});
+        for (LoaiPhong loai : controller.types()) {
+            typeModel.addRow(new Object[] {
+                    loai.maLoaiPhong(),
+                    loai.tenLoai(),
+                    loai.soNguoiToiDa() + " khách",
+                    loai.giaTheoNgay()
+            });
+        }
     }
 
     private void capNhatBangTang() {
@@ -201,45 +451,155 @@ public class PhongPanel extends JPanel {
         for (Tang tang : controller.floors()) {
             long soPhong = controller.rooms().stream()
                     .filter(phong -> phong.maTang().equals(tang.maTang())).count();
-            floorModel.addRow(new Object[] {tang.maTang(), tang.tenTang(), soPhong});
+            floorModel.addRow(new Object[] {
+                    tang.maTang(),
+                    tang.tenTang(),
+                    soPhong + " phòng"
+            });
         }
     }
 
+    /**
+     * Ve lai So do phong dang cac the card cao cap.
+     */
     private void capNhatSoDo() {
-        pnlSoDoPhong.removeAll();
+        pnlSoDoGrid.removeAll();
         String maTang = maDangChon(cboLocTang);
         Object selected = cboLocTrangThai.getSelectedItem();
+        String keyword = txtTimKiem.getText().trim().toLowerCase();
+
         for (Phong phong : controller.rooms()) {
             if (!maTang.isBlank() && !maTang.equals(phong.maTang())) continue;
             if (selected instanceof TrangThaiPhong state && state != phong.trangThai()) continue;
-            JPanel card = new JPanel(new BorderLayout(0, 8));
-            card.setBackground(Color.WHITE);
-            Color mauVien = phong.ngungSuDung() ? Color.GRAY : mau(phong.trangThai());
-            card.setBorder(BorderFactory.createCompoundBorder(
-                    BorderFactory.createLineBorder(mauVien, 2),
-                    BorderFactory.createEmptyBorder(14, 14, 14, 14)));
-            JLabel room = new JLabel("Phong " + phong.soPhong());
-            room.setFont(room.getFont().deriveFont(Font.BOLD, 16f));
-            JLabel type = new JLabel(controller.type(phong.maLoaiPhong()).tenLoai());
-            JLabel state = new JLabel(phong.ngungSuDung()
-                    ? "Ngung su dung" : phong.trangThai().toString());
-            card.add(room, BorderLayout.NORTH);
-            card.add(type, BorderLayout.CENTER);
-            card.add(state, BorderLayout.SOUTH);
-            card.setPreferredSize(new Dimension(190, 112));
-            pnlSoDoPhong.add(card);
+            if (!keyword.isEmpty() && !phong.soPhong().toLowerCase().contains(keyword)
+                    && !phong.maPhong().toLowerCase().contains(keyword)) {
+                continue;
+            }
+
+            LoaiPhong loai = controller.type(phong.maLoaiPhong());
+            Tang tang = controller.floor(phong.maTang());
+            BigDecimal gia = phong.giaPhong() == null ? (loai == null ? BigDecimal.ZERO : loai.giaTheoNgay()) : phong.giaPhong();
+
+            JPanel card = taoCardPhong(phong, loai, tang, gia);
+            pnlSoDoGrid.add(card);
         }
-        pnlSoDoPhong.revalidate();
-        pnlSoDoPhong.repaint();
+
+        pnlSoDoGrid.revalidate();
+        pnlSoDoGrid.repaint();
     }
 
-    private Color mau(TrangThaiPhong state) {
+    /**
+     * Tao the phong phong cach Hotel PMS hien dai.
+     */
+    private JPanel taoCardPhong(Phong phong, LoaiPhong loai, Tang tang, BigDecimal gia) {
+        JPanel card = new JPanel(new BorderLayout(0, 8));
+        card.setBackground(Color.WHITE);
+        card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        Color statusColor = phong.ngungSuDung() ? HotelTheme.GRAY_BORDER : mauTrangThai(phong.trangThai());
+
+        // Vien the voi vien tren dam mau the hien trang thai
+        card.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(4, 1, 1, 1, statusColor),
+                BorderFactory.createEmptyBorder(12, 14, 12, 14)
+        ));
+
+        // Header the: So phong to & Loai phong
+        JPanel cardHeader = new JPanel(new BorderLayout());
+        cardHeader.setOpaque(false);
+
+        JLabel lblRoom = new JLabel("Phòng " + phong.soPhong());
+        lblRoom.setFont(new Font("Segoe UI", Font.BOLD, 17));
+        lblRoom.setForeground(HotelTheme.TEXT_PRIMARY);
+
+        JLabel lblType = new JLabel(loai == null ? "" : loai.tenLoai());
+        lblType.setFont(HotelTheme.FONT_SMALL);
+        lblType.setForeground(HotelTheme.TEXT_SECONDARY);
+
+        cardHeader.add(lblRoom, BorderLayout.WEST);
+        cardHeader.add(lblType, BorderLayout.EAST);
+
+        // Body the: Tang & Suc chua
+        JPanel cardBody = new JPanel(new GridLayout(2, 1, 0, 2));
+        cardBody.setOpaque(false);
+
+        JLabel lblTang = new JLabel("Vị trí: " + (tang == null ? phong.maTang() : tang.tenTang()));
+        lblTang.setFont(HotelTheme.FONT_SMALL);
+        lblTang.setForeground(HotelTheme.TEXT_MUTED);
+
+        JLabel lblGia = new JLabel(HotelTheme.formatVnd(gia) + "/đêm");
+        lblGia.setFont(HotelTheme.FONT_BOLD);
+        lblGia.setForeground(HotelTheme.PRIMARY_BLUE);
+
+        cardBody.add(lblTang);
+        cardBody.add(lblGia);
+
+        // Footer the: Pill badge trang thai
+        JLabel lblStatus = new JLabel("● " + tenHienThiTrangThai(phong), SwingConstants.CENTER);
+        lblStatus.setFont(HotelTheme.FONT_BADGE);
+        lblStatus.setOpaque(true);
+        lblStatus.setBackground(mauNenTrangThai(phong));
+        lblStatus.setForeground(mauChuTrangThai(phong));
+        lblStatus.setBorder(BorderFactory.createEmptyBorder(4, 8, 4, 8));
+
+        card.add(cardHeader, BorderLayout.NORTH);
+        card.add(cardBody, BorderLayout.CENTER);
+        card.add(lblStatus, BorderLayout.SOUTH);
+        card.setPreferredSize(new Dimension(210, 136));
+
+        // Double click chuot vao the de mo thong tin sua
+        card.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) {
+                    suaPhong(phong);
+                }
+            }
+        });
+
+        return card;
+    }
+
+    private String tenHienThiTrangThai(Phong phong) {
+        if (phong.ngungSuDung()) return "Ngừng sử dụng";
+        return switch (phong.trangThai()) {
+            case TRONG -> "Sẵn sàng (Trống)";
+            case DA_DAT -> "Đã đặt trước";
+            case DANG_SU_DUNG -> "Đang có khách";
+            case DANG_DON -> "Đang dọn dẹp";
+            case BAO_TRI -> "Đang bảo trì";
+        };
+    }
+
+    private Color mauTrangThai(TrangThaiPhong state) {
         return switch (state) {
-            case TRONG -> new Color(33, 139, 111);
-            case DA_DAT -> new Color(117, 86, 179);
-            case DANG_SU_DUNG -> new Color(56, 111, 175);
-            case DANG_DON -> new Color(185, 132, 39);
-            case BAO_TRI -> new Color(164, 76, 78);
+            case TRONG -> new Color(16, 185, 129); // Emerald
+            case DA_DAT -> new Color(139, 92, 246); // Purple
+            case DANG_SU_DUNG -> new Color(2, 132, 199); // Sky
+            case DANG_DON -> new Color(245, 158, 11); // Amber
+            case BAO_TRI -> new Color(239, 68, 68); // Red
+        };
+    }
+
+    private Color mauNenTrangThai(Phong phong) {
+        if (phong.ngungSuDung()) return HotelTheme.GRAY_BG;
+        return switch (phong.trangThai()) {
+            case TRONG -> HotelTheme.SUCCESS_BG;
+            case DA_DAT -> HotelTheme.PURPLE_BG;
+            case DANG_SU_DUNG -> HotelTheme.INFO_BG;
+            case DANG_DON -> HotelTheme.WARNING_BG;
+            case BAO_TRI -> HotelTheme.DANGER_BG;
+        };
+    }
+
+    private Color mauChuTrangThai(Phong phong) {
+        if (phong.ngungSuDung()) return HotelTheme.GRAY_TEXT;
+        return switch (phong.trangThai()) {
+            case TRONG -> HotelTheme.SUCCESS_TEXT;
+            case DA_DAT -> HotelTheme.PURPLE_TEXT;
+            case DANG_SU_DUNG -> HotelTheme.INFO_TEXT;
+            case DANG_DON -> HotelTheme.WARNING_TEXT;
+            case BAO_TRI -> HotelTheme.DANGER_TEXT;
         };
     }
 
@@ -250,38 +610,55 @@ public class PhongPanel extends JPanel {
                 ? "" : current.giaPhong().toPlainString());
         JComboBox<Choice> loai = new JComboBox<>();
         JComboBox<Choice> tang = new JComboBox<>();
-        for (LoaiPhong value : controller.types())
+
+        for (LoaiPhong value : controller.types()) {
             loai.addItem(new Choice(value.maLoaiPhong(), value.tenLoai()));
-        for (Tang value : controller.floors())
+        }
+        for (Tang value : controller.floors()) {
             tang.addItem(new Choice(value.maTang(), value.tenTang()));
+        }
         if (current != null) {
             chon(loai, current.maLoaiPhong());
             chon(tang, current.maTang());
         }
         ma.setEditable(current == null);
-        JPanel form = form(new String[] {"Ma phong", "So phong", "Loai phong", "Tang", "Gia rieng (de trong de dung gia loai)"},
-                new JComponent[] {ma, so, loai, tang, gia});
-        if (JOptionPane.showConfirmDialog(this, form, "Thong tin phong",
-                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        JPanel form = taoFormDialog(new String[] {
+                "Mã phòng (ví dụ P101):",
+                "Số phòng (hiển thị cửa):",
+                "Hạng loại phòng:",
+                "Vị trí tầng:",
+                "Giá riêng (VNĐ/đêm - để trống dùng giá gốc):"
+        }, new JComponent[] {ma, so, loai, tang, gia});
+
+        String title = current == null ? "Thêm Phòng Mới" : "Cập Nhật Thông Tin Phòng " + current.soPhong();
+        if (JOptionPane.showConfirmDialog(this, form, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+
         try {
             Choice loaiChon = (Choice) loai.getSelectedItem();
             Choice tangChon = (Choice) tang.getSelectedItem();
-            Phong phong = new Phong(ma.getText().trim().toUpperCase(), so.getText().trim(),
+            Phong phong = new Phong(
+                    ma.getText().trim().toUpperCase(),
+                    so.getText().trim(),
                     loaiChon == null ? null : loaiChon.id(),
                     tangChon == null ? null : tangChon.id(),
                     gia.getText().isBlank() ? null : new BigDecimal(gia.getText().trim()),
                     current == null ? TRONG : current.trangThai(),
-                    current != null && current.ngungSuDung());
+                    current != null && current.ngungSuDung()
+            );
             controller.saveRoom(phong, current != null, () -> {});
         } catch (NumberFormatException ex) {
-            thongBao("Gia phong phai la so.");
+            thongBao("Đơn giá phòng phải là số hợp lệ.");
         }
     }
 
     private void capNhatPhong() {
         Phong current = phongDangChon();
         if (current == null) {
-            thongBao("Chon mot phong de cap nhat.");
+            thongBao("Vui lòng chọn một phòng trong bảng để cập nhật.");
             return;
         }
         suaPhong(current);
@@ -293,23 +670,36 @@ public class PhongPanel extends JPanel {
         JTextField sucChua = new JTextField(current == null ? "" : "" + current.soNguoiToiDa());
         JTextField gia = new JTextField(current == null ? "" : current.giaTheoNgay().toPlainString());
         ma.setEditable(current == null);
-        JPanel form = form(new String[] {"Ma loai", "Ten loai", "Suc chua", "Gia theo ngay"},
-                new JComponent[] {ma, ten, sucChua, gia});
-        if (JOptionPane.showConfirmDialog(this, form, "Loai phong",
-                JOptionPane.OK_CANCEL_OPTION) != JOptionPane.OK_OPTION) return;
+
+        JPanel form = taoFormDialog(new String[] {
+                "Mã loại phòng (ví dụ STD, DLX):",
+                "Tên loại phòng:",
+                "Sức chứa tối đa (người):",
+                "Đơn giá niêm yết theo ngày (VNĐ):"
+        }, new JComponent[] {ma, ten, sucChua, gia});
+
+        String title = current == null ? "Thêm Loại Phòng Mới" : "Cập Nhật Loại Phòng " + current.tenLoai();
+        if (JOptionPane.showConfirmDialog(this, form, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) {
+            return;
+        }
+
         try {
-            controller.saveType(new LoaiPhong(ma.getText().trim().toUpperCase(),
-                    ten.getText().trim(), Integer.parseInt(sucChua.getText().trim()),
-                    new BigDecimal(gia.getText().trim())), current != null, () -> {});
+            controller.saveType(new LoaiPhong(
+                    ma.getText().trim().toUpperCase(),
+                    ten.getText().trim(),
+                    Integer.parseInt(sucChua.getText().trim()),
+                    new BigDecimal(gia.getText().trim())
+            ), current != null, () -> {});
         } catch (NumberFormatException ex) {
-            thongBao("Suc chua va gia phai la so.");
+            thongBao("Sức chứa và giá phòng phải là số hợp lệ.");
         }
     }
 
     private void capNhatLoai() {
         LoaiPhong current = loaiDangChon();
         if (current == null) {
-            thongBao("Chon mot loai phong de cap nhat.");
+            thongBao("Vui lòng chọn một hạng phòng để cập nhật.");
             return;
         }
         suaLoai(current);
@@ -319,17 +709,24 @@ public class PhongPanel extends JPanel {
         JTextField ma = new JTextField(current == null ? "" : current.maTang());
         JTextField ten = new JTextField(current == null ? "" : current.tenTang());
         ma.setEditable(current == null);
-        JPanel form = form(new String[] {"Ma tang", "Ten tang"}, new JComponent[] {ma, ten});
-        if (JOptionPane.showConfirmDialog(this, form, "Tang",
-                JOptionPane.OK_CANCEL_OPTION) == JOptionPane.OK_OPTION)
+
+        JPanel form = taoFormDialog(new String[] {
+                "Mã tầng (ví dụ T1, T2):",
+                "Tên hiển thị tầng (ví dụ Tầng 1):"
+        }, new JComponent[] {ma, ten});
+
+        String title = current == null ? "Thêm Tầng Mới" : "Cập Nhật Tầng " + current.tenTang();
+        if (JOptionPane.showConfirmDialog(this, form, title,
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
             controller.saveFloor(new Tang(ma.getText().trim().toUpperCase(), ten.getText().trim()),
                     current != null, () -> {});
+        }
     }
 
     private void capNhatTang() {
         Tang current = tangDangChon();
         if (current == null) {
-            thongBao("Chon mot tang de cap nhat.");
+            thongBao("Vui lòng chọn một tầng để cập nhật.");
             return;
         }
         suaTang(current);
@@ -337,20 +734,33 @@ public class PhongPanel extends JPanel {
 
     private void ngungPhong() {
         Phong phong = phongDangChon();
-        if (phong == null) return;
-        if (JOptionPane.showConfirmDialog(this, "Ngung su dung phong " + phong.soPhong() + "?",
-                "Xac nhan", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION)
+        if (phong == null) {
+            thongBao("Vui lòng chọn phòng cần ngừng sử dụng.");
+            return;
+        }
+        if (JOptionPane.showConfirmDialog(this,
+                "Xác nhận ngừng sử dụng phòng " + phong.soPhong() + "?\n(Chỉ thực hiện được khi phòng đang trống)",
+                "Xác nhận", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
             controller.disableRoom(phong.maPhong(), () -> {});
+        }
     }
 
     private void xoaLoai() {
         String ma = id(tblLoai);
-        if (ma != null) controller.deleteType(ma, () -> {});
+        if (ma != null && JOptionPane.showConfirmDialog(this,
+                "Xác nhận xóa hạng phòng " + ma + "?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            controller.deleteType(ma, () -> {});
+        }
     }
 
     private void xoaTang() {
         String ma = id(tblTang);
-        if (ma != null) controller.deleteFloor(ma, () -> {});
+        if (ma != null && JOptionPane.showConfirmDialog(this,
+                "Xác nhận xóa tầng " + ma + "?", "Xác nhận",
+                JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION) {
+            controller.deleteFloor(ma, () -> {});
+        }
     }
 
     private Phong phongDangChon() {
@@ -374,10 +784,11 @@ public class PhongPanel extends JPanel {
                 table.convertRowIndexToModel(selected), 0).toString();
     }
 
-    private JButton nut(String label, Runnable action) {
-        JButton button = new JButton(label);
-        button.addActionListener(event -> action.run());
-        if (!label.equals("Tai lai")) actionButtons.add(button);
+    private JButton nut(String label, HotelTheme.ButtonType type, Runnable action) {
+        JButton button = HotelTheme.createButton(label, type, action);
+        if (type != HotelTheme.ButtonType.SECONDARY) {
+            actionButtons.add(button);
+        }
         return button;
     }
 
@@ -388,24 +799,43 @@ public class PhongPanel extends JPanel {
 
     private static DefaultTableModel taoModel(String... columns) {
         return new DefaultTableModel(columns, 0) {
+            @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
     }
 
-    private JPanel form(String[] labels, JComponent[] fields) {
-        JPanel panel = new JPanel(new GridLayout(0, 2, 8, 8));
+    private JPanel taoFormDialog(String[] labels, JComponent[] fields) {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(8, 8, 8, 8));
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(6, 6, 6, 6);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         for (int i = 0; i < labels.length; i++) {
-            panel.add(new JLabel(labels[i]));
-            panel.add(fields[i]);
+            gbc.gridx = 0;
+            gbc.gridy = i;
+            gbc.weightx = 0.35;
+            JLabel lbl = new JLabel(labels[i]);
+            lbl.setFont(HotelTheme.FONT_BOLD);
+            panel.add(lbl, gbc);
+
+            gbc.gridx = 1;
+            gbc.weightx = 0.65;
+            fields[i].setPreferredSize(new Dimension(220, 32));
+            panel.add(fields[i], gbc);
         }
         return panel;
     }
 
     private void chon(JComboBox<Choice> combo, String id) {
-        for (int i = 0; i < combo.getItemCount(); i++)
-            if (combo.getItemAt(i).id().equals(id)) combo.setSelectedIndex(i);
+        for (int i = 0; i < combo.getItemCount(); i++) {
+            if (combo.getItemAt(i).id().equals(id)) {
+                combo.setSelectedIndex(i);
+                return;
+            }
+        }
     }
 
     private String maDangChon(JComboBox<Choice> combo) {
@@ -414,10 +844,11 @@ public class PhongPanel extends JPanel {
     }
 
     private void thongBao(String message) {
-        JOptionPane.showMessageDialog(this, message, "Thong tin", JOptionPane.WARNING_MESSAGE);
+        JOptionPane.showMessageDialog(this, message, "Thông báo", JOptionPane.WARNING_MESSAGE);
     }
 
     private record Choice(String id, String ten) {
+        @Override
         public String toString() {
             return ten;
         }
