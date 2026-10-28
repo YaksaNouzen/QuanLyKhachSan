@@ -2,9 +2,24 @@ package Module_TaiChinh.view;
 
 import QLDichVu.view.DichVuPanel;
 import Module_PhanHoi.view.PhanHoiPanel;
+import common.database.ConnectionFactory;
+import common.database.DatabaseConnection;
 import java.awt.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import module.baotri.controller.BaoTriController;
+import module.baotri.dao.SqlServerBaoTriDAO;
+import module.baotri.service.BaoTriService;
+import module.baotri.view.BaoTriPanel;
+import module.buongphong.controller.BuongPhongController;
+import module.buongphong.dao.SqlServerVeSinhDAO;
+import module.buongphong.service.BuongPhongService;
+import module.buongphong.view.BuongPhongPanel;
+import module.datphong.view.DatPhongView;
+import module.phong.controller.PhongController;
+import module.phong.dao.SqlServerPhongDAO;
+import module.phong.service.PhongService;
+import module.phong.view.PhongPanel;
 
 public class MainFrame extends JFrame {
 
@@ -16,6 +31,13 @@ public class MainFrame extends JFrame {
     private ChiTietHoaDonPanel chiTietHoaDonPanel;
     private ThanhToanPanel thanhToanPanel;
     private ThongKeTaiChinhPanel thongKeTaiChinhPanel;
+    private DatPhongView leTanPanel;
+    private PhongController phongController;
+    private BuongPhongController buongPhongController;
+    private BaoTriController baoTriController;
+    private PhongPanel phongPanel;
+    private BuongPhongPanel buongPhongPanel;
+    private BaoTriPanel baoTriPanel;
 
     public MainFrame() {
         setTitle("HỆ THỐNG QUẢN LÝ KHÁCH SẠN");
@@ -30,7 +52,6 @@ public class MainFrame extends JFrame {
         // Thanh ben trai
         JPanel pnlSidebar = new JPanel();
         pnlSidebar.setBackground(new Color(23, 54, 93));
-        pnlSidebar.setPreferredSize(new Dimension(220, 0));
         pnlSidebar.setLayout(new BoxLayout(
                 pnlSidebar, BoxLayout.Y_AXIS));
         pnlSidebar.setBorder(new EmptyBorder(20, 12, 20, 12));
@@ -64,6 +85,24 @@ public class MainFrame extends JFrame {
         pnlSidebar.add(taoNutMenu("Trang chủ", "HOME"));
         pnlSidebar.add(Box.createVerticalStrut(8));
 
+        pnlSidebar.add(taoNutMenu("Quản lý khách hàng", "KHACHHANG"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Quản lý đặt phòng", "DATPHONG"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Nhận / trả phòng", "LUUTRU"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Quản lý phòng", "PHONG"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Buồng phòng", "BUONGPHONG"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Bảo trì", "BAOTRI"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
         pnlSidebar.add(taoNutMenu("Quản lý hóa đơn", "HOADON"));
         pnlSidebar.add(Box.createVerticalStrut(8));
 
@@ -86,7 +125,16 @@ public class MainFrame extends JFrame {
         lblFooter.setAlignmentX(Component.CENTER_ALIGNMENT);
         pnlSidebar.add(lblFooter);
 
-        add(pnlSidebar, BorderLayout.WEST);
+        JScrollPane sidebarScroll = new JScrollPane(
+                pnlSidebar,
+                ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+                ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        sidebarScroll.setPreferredSize(new Dimension(235, 0));
+        sidebarScroll.setBorder(null);
+        sidebarScroll.getViewport().setBackground(new Color(23, 54, 93));
+        sidebarScroll.getVerticalScrollBar().setUnitIncrement(18);
+
+        add(sidebarScroll, BorderLayout.WEST);
         add(pnlContent, BorderLayout.CENTER);
 
         // Hien thi man hinh mac dinh
@@ -112,6 +160,12 @@ public class MainFrame extends JFrame {
 
         btn.addActionListener(e -> {
             switch (maTrang) {
+                case "KHACHHANG" -> moManHinhLeTan("KHACHHANG");
+                case "DATPHONG" -> moManHinhLeTan("DATPHONG");
+                case "LUUTRU" -> moManHinhLeTan("LUUTRU");
+                case "PHONG" -> moManHinhNhom2("PHONG");
+                case "BUONGPHONG" -> moManHinhNhom2("BUONGPHONG");
+                case "BAOTRI" -> moManHinhNhom2("BAOTRI");
                 case "HOADON" -> moManHinhHoaDon();
                 case "CHITIET" -> moManHinhChiTietHoaDon();
                 case "THANHTOAN" -> moManHinhThanhToan();
@@ -124,6 +178,12 @@ public class MainFrame extends JFrame {
 
         // Tao trang tam cho cac chuc nang chua xay dung
         if (!"HOME".equals(maTrang)
+                && !"KHACHHANG".equals(maTrang)
+                && !"DATPHONG".equals(maTrang)
+                && !"LUUTRU".equals(maTrang)
+                && !"PHONG".equals(maTrang)
+                && !"BUONGPHONG".equals(maTrang)
+                && !"BAOTRI".equals(maTrang)
                 && !"HOADON".equals(maTrang)
                 && !"CHITIET".equals(maTrang)
                 && !"THANHTOAN".equals(maTrang)
@@ -163,6 +223,49 @@ public class MainFrame extends JFrame {
 
         panel.add(box);
         return panel;
+    }
+
+    private void moManHinhLeTan(String trang) {
+        if (leTanPanel == null) {
+            leTanPanel = new DatPhongView();
+            pnlContent.add(leTanPanel, "LE_TAN");
+        }
+
+        switch (trang) {
+            case "KHACHHANG" -> leTanPanel.hienThiKhachHang();
+            case "LUUTRU" -> leTanPanel.hienThiLuuTru();
+            default -> leTanPanel.hienThiDatPhong();
+        }
+        cardLayout.show(pnlContent, "LE_TAN");
+    }
+
+    private void khoiTaoNhom2() {
+        if (phongPanel != null) return;
+
+        ConnectionFactory connections = DatabaseConnection::getConnection;
+        SqlServerPhongDAO phongDAO = new SqlServerPhongDAO(connections);
+        phongController = new PhongController(new PhongService(phongDAO));
+        buongPhongController = new BuongPhongController(
+                new BuongPhongService(new SqlServerVeSinhDAO(connections, phongDAO)));
+        baoTriController = new BaoTriController(
+                new BaoTriService(new SqlServerBaoTriDAO(connections, phongDAO)));
+
+        phongPanel = new PhongPanel(phongController);
+        buongPhongPanel = new BuongPhongPanel(buongPhongController, phongController);
+        baoTriPanel = new BaoTriPanel(baoTriController, phongController);
+        pnlContent.add(phongPanel, "PHONG");
+        pnlContent.add(buongPhongPanel, "BUONGPHONG");
+        pnlContent.add(baoTriPanel, "BAOTRI");
+    }
+
+    private void moManHinhNhom2(String trang) {
+        khoiTaoNhom2();
+        cardLayout.show(pnlContent, trang);
+        switch (trang) {
+            case "BUONGPHONG" -> buongPhongController.refresh();
+            case "BAOTRI" -> baoTriController.refresh();
+            default -> phongController.refresh();
+        }
     }
 
     private void moManHinhHoaDon() {

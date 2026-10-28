@@ -61,6 +61,27 @@ Nhánh `feature/nhom5-tai-chinh-dich-vu-phan-hoi` là bản nhóm 5 cũ và khô
 - Nhập Phòng, Buồng phòng, Bảo trì sau khi khóa liên kết phòng được xác định.
 - Kết nối luồng đặt phòng với trạng thái phòng nhưng chưa nối tài chính vội.
 
+Trạng thái ngày 2026-10-28:
+
+- Đã nhập sáu package nghiệp vụ `khachhang`, `datphong`, `luutru`, `phong`,
+  `buongphong`, `baotri` vào project nền Nhóm 5; không nhập hai `MainFrame`
+  cũ và không chép đè cấu hình build.
+- Đã tạo một kết nối dùng chung cho Nhóm 1-2, trỏ tới database
+  `QuanLyKhachSan`; không lưu tài khoản hoặc mật khẩu trong source.
+- Đã nhúng sáu màn hình vào `Module_TaiChinh.view.MainFrame`. Sidebar có
+  thanh cuộn để tiếp tục nhận các module Nhóm 3-4.
+- Đã bổ sung 7 procedure đặt/nhận/trả/đổi phòng vào master schema. Nhận phòng
+  chuyển phòng sang `DANG_SU_DUNG`; trả phòng chuyển sang `DANG_DON` để module
+  buồng phòng xử lý.
+- Đã áp dụng mã tự động cho khách hàng và đặt phòng. Các kiểm tra dữ liệu,
+  giấy tờ khách, phòng và lịch được chạy trước khi lấy số sequence nhằm hạn
+  chế nhảy mã.
+- 97 file source cùng toàn bộ test hiện có biên dịch thành công. Các test
+  `PhongServiceTest`, `BuongPhongServiceTest`, `BaoTriServiceTest`,
+  `Nhom2UiRenderTest` và `DichVuLayerTest` đều PASS.
+- Còn cần chạy smoke test thật với SQL Server sau khi dịch vụ database trên
+  máy hoạt động; hiện máy không kết nối được instance SQL Server cục bộ.
+
 ### Bước 4 - Nhập nhóm 3 và nhóm 4
 
 - Nhập Nhân viên, Ca làm việc, Tài khoản/phân quyền.
