@@ -88,6 +88,23 @@ Trạng thái ngày 2026-10-28:
 - Nhập Kho vật tư, Nhà cung cấp, Nhập hàng.
 - Giữ nghiệp vụ từng nhóm độc lập trong lần nhập đầu.
 
+Trạng thái ngày 2026-10-28:
+
+- Đã nhập các lớp nghiệp vụ, DAO và JPanel của cả sáu module vào project
+  tích hợp; chỉ giữ `MainFrame` chung. Nhóm 3 được đặt dưới namespace `nhom3`
+  để tránh xung đột tên package tổng quát `dao/model/view/util`.
+- Các DAO Nhóm 3-4 đã dùng `common.database.DatabaseConnection` và schema
+  `QuanLyKhachSan`; không nhập lớp kết nối có mật khẩu cố định của Nhóm 4
+  hoặc chế độ H2 riêng của Nhóm 3.
+- Đã sửa `NhanVienDAO.them` để nêu rõ cột khi INSERT, vì schema chung bổ sung
+  cột `SoGiayTo` nullable. Mã Admin đầu tiên được cấp bằng sequence `NHAN_VIEN`.
+- Khi database chưa có tài khoản, giao diện Nhóm 3 cho phép tạo Admin đầu tiên
+  trong một transaction; từ đó đăng nhập và kiểm tra quyền Admin/Kế toán.
+  Phân quyền cho toàn bộ 15 module còn thuộc Bước 5.
+- 133 file Java và toàn bộ test hiện có biên dịch; năm kiểm thử offline đang
+  có đều PASS. CRUD Nhóm 3-4 vẫn cần thử trực tiếp trên SQL Server và với dữ
+  liệu thực. Mã tự động cho các form thêm mới còn lại thuộc Bước 5.
+
 ### Bước 5 - Liên kết nghiệp vụ và hoàn thiện
 
 - Nhận/trả phòng -> Dịch vụ -> Hóa đơn -> Thanh toán -> Thống kê.

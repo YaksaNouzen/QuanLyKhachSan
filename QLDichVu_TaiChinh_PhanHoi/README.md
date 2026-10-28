@@ -1,6 +1,27 @@
 # QLKhachSanTichHop
 
-Module thứ ba **Quản lý phản hồi khách hàng** đã được bổ sung. Xem [README-PHANHOI.md](README-PHANHOI.md) để tạo database QLPhanHoi thủ công, cấu hình kết nối riêng và chạy kiểm tra ngoại tuyến. Các phần bên dưới mô tả bản tích hợp Tài chính/Dịch vụ ban đầu.
+## Chạy bản tích hợp hiện tại
+
+1. Tạo database trống bằng `../database/FULL_DATABASE.sql` theo hướng dẫn ở
+   `../database/README.md`.
+2. Mở chính thư mục `QLDichVu_TaiChinh_PhanHoi` bằng NetBeans và chạy project
+   với `Module_TaiChinh.view.MainFrame`.
+3. Khi mở Khách hàng, Đặt phòng, Phòng, Nhân sự hoặc Kho lần đầu, nhập JDBC URL
+   tới database `QuanLyKhachSan` và tài khoản SQL Server trong hộp kết nối.
+   Thông tin này chỉ lưu trong phiên chạy; không đưa mật khẩu vào source.
+4. Nếu chưa có tài khoản hệ thống nhân sự, mục Nhân viên sẽ mời tạo Admin đầu
+   tiên, sau đó đăng nhập. Đây là tài khoản **ứng dụng**, khác với tài khoản
+   **SQL Server** ở bước 3.
+
+Các module Tài chính, Dịch vụ và Phản hồi còn dùng kết nối database riêng từ
+bản Nhóm 5. Việc chuyển cả ba sang kết nối chung và phân quyền toàn hệ thống
+thuộc bước liên kết nghiệp vụ tiếp theo. Chưa dùng các script SQL đơn lẻ của
+từng nhóm để tạo lại database tích hợp.
+
+## Ghi chép của bản Nhóm 5 trước khi tích hợp
+
+Các chỉ dẫn và kết quả kiểm thử dưới đây mô tả bản Nhóm 5 ban đầu, chưa phản
+ánh trạng thái của toàn bộ 15 module hiện nay.
 
 Ứng dụng Swing tích hợp, dùng Module_TaiChinh.view.MainFrame làm cửa sổ chính.
 

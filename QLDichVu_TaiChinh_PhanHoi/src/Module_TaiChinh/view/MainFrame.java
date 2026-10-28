@@ -2,6 +2,9 @@ package Module_TaiChinh.view;
 
 import QLDichVu.view.DichVuPanel;
 import Module_PhanHoi.view.PhanHoiPanel;
+import Module_QuanLyNhaCungCap.view.NhaCungCapPanel;
+import Module_QuanLyNhapHang.view.PhieuNhapPanel;
+import Module_QuanLyVatTu.view.VatTuPanel;
 import common.database.ConnectionFactory;
 import common.database.DatabaseConnection;
 import java.awt.*;
@@ -23,6 +26,13 @@ import module.phong.controller.PhongController;
 import module.phong.dao.SqlServerPhongDAO;
 import module.phong.service.PhongService;
 import module.phong.view.PhongPanel;
+import nhom3.model.TaiKhoan;
+import nhom3.service.NhanSuAccessService;
+import nhom3.util.PhienDangNhap;
+import nhom3.view.CaLamPanel;
+import nhom3.view.NhanVienPanel;
+import nhom3.view.PhanCaPanel;
+import nhom3.view.TaiKhoanPanel;
 
 public class MainFrame extends JFrame {
 
@@ -41,6 +51,14 @@ public class MainFrame extends JFrame {
     private PhongPanel phongPanel;
     private BuongPhongPanel buongPhongPanel;
     private BaoTriPanel baoTriPanel;
+    private VatTuPanel vatTuPanel;
+    private NhaCungCapPanel nhaCungCapPanel;
+    private PhieuNhapPanel phieuNhapPanel;
+    private NhanVienPanel nhanVienPanel;
+    private CaLamPanel caLamPanel;
+    private PhanCaPanel phanCaPanel;
+    private TaiKhoanPanel taiKhoanPanel;
+    private final NhanSuAccessService nhanSuAccess = new NhanSuAccessService();
     private boolean daKiemTraKetNoiChung;
 
     public MainFrame() {
@@ -107,6 +125,24 @@ public class MainFrame extends JFrame {
         pnlSidebar.add(taoNutMenu("Bảo trì", "BAOTRI"));
         pnlSidebar.add(Box.createVerticalStrut(8));
 
+        pnlSidebar.add(taoNutMenu("Kho vật tư", "VATTU"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Nhà cung cấp", "NHACUNGCAP"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Nhập hàng", "PHIEUNHAP"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
+        pnlSidebar.add(taoNutMenu("Nhân viên", "NHANVIEN"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Ca làm", "CALAM"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Lịch trực & bàn giao", "PHANCA"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Tài khoản & phân quyền", "TAIKHOAN"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+        pnlSidebar.add(taoNutMenu("Đăng xuất nhân sự", "DANGXUAT_NHANSU"));
+        pnlSidebar.add(Box.createVerticalStrut(8));
+
         pnlSidebar.add(taoNutMenu("Quản lý hóa đơn", "HOADON"));
         pnlSidebar.add(Box.createVerticalStrut(8));
 
@@ -170,6 +206,9 @@ public class MainFrame extends JFrame {
                 case "PHONG" -> moManHinhNhom2("PHONG");
                 case "BUONGPHONG" -> moManHinhNhom2("BUONGPHONG");
                 case "BAOTRI" -> moManHinhNhom2("BAOTRI");
+                case "VATTU", "NHACUNGCAP", "PHIEUNHAP" -> moManHinhKho(maTrang);
+                case "NHANVIEN", "CALAM", "PHANCA", "TAIKHOAN" -> moManHinhNhanSu(maTrang);
+                case "DANGXUAT_NHANSU" -> dangXuatNhanSu();
                 case "HOADON" -> moManHinhHoaDon();
                 case "CHITIET" -> moManHinhChiTietHoaDon();
                 case "THANHTOAN" -> moManHinhThanhToan();
@@ -188,6 +227,14 @@ public class MainFrame extends JFrame {
                 && !"PHONG".equals(maTrang)
                 && !"BUONGPHONG".equals(maTrang)
                 && !"BAOTRI".equals(maTrang)
+                && !"VATTU".equals(maTrang)
+                && !"NHACUNGCAP".equals(maTrang)
+                && !"PHIEUNHAP".equals(maTrang)
+                && !"NHANVIEN".equals(maTrang)
+                && !"CALAM".equals(maTrang)
+                && !"PHANCA".equals(maTrang)
+                && !"TAIKHOAN".equals(maTrang)
+                && !"DANGXUAT_NHANSU".equals(maTrang)
                 && !"HOADON".equals(maTrang)
                 && !"CHITIET".equals(maTrang)
                 && !"THANHTOAN".equals(maTrang)
@@ -330,6 +377,172 @@ public class MainFrame extends JFrame {
                         "Lỗi kết nối cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
             }
         }
+    }
+
+    private void moManHinhKho(String trang) {
+        if (!damBaoKetNoiChung()) return;
+        switch (trang) {
+            case "VATTU" -> {
+                if (vatTuPanel == null) {
+                    vatTuPanel = new VatTuPanel();
+                    pnlContent.add(vatTuPanel, "VATTU");
+                }
+                vatTuPanel.taiDuLieu();
+            }
+            case "NHACUNGCAP" -> {
+                if (nhaCungCapPanel == null) {
+                    nhaCungCapPanel = new NhaCungCapPanel();
+                    pnlContent.add(nhaCungCapPanel, "NHACUNGCAP");
+                }
+                nhaCungCapPanel.taiDuLieu();
+            }
+            case "PHIEUNHAP" -> {
+                if (phieuNhapPanel == null) {
+                    phieuNhapPanel = new PhieuNhapPanel();
+                    pnlContent.add(phieuNhapPanel, "PHIEUNHAP");
+                }
+                phieuNhapPanel.taiDuLieu();
+            }
+            default -> { return; }
+        }
+        cardLayout.show(pnlContent, trang);
+    }
+
+    private void moManHinhNhanSu(String trang) {
+        if (!damBaoKetNoiChung() || !damBaoDangNhapNhanSu()) return;
+        boolean admin = PhienDangNhap.laAdmin();
+        boolean keToan = PhienDangNhap.laVaiTro("KETOAN");
+        if (("NHANVIEN".equals(trang) && !admin && !keToan)
+                || (("CALAM".equals(trang) || "TAIKHOAN".equals(trang)) && !admin)) {
+            JOptionPane.showMessageDialog(this, "Tài khoản này không có quyền mở chức năng.");
+            return;
+        }
+
+        switch (trang) {
+            case "NHANVIEN" -> {
+                if (nhanVienPanel == null) {
+                    nhanVienPanel = new NhanVienPanel(keToan);
+                    pnlContent.add(nhanVienPanel, "NHANVIEN");
+                }
+            }
+            case "CALAM" -> {
+                if (caLamPanel == null) {
+                    caLamPanel = new CaLamPanel();
+                    pnlContent.add(caLamPanel, "CALAM");
+                }
+            }
+            case "PHANCA" -> {
+                if (phanCaPanel == null) {
+                    phanCaPanel = new PhanCaPanel();
+                    pnlContent.add(phanCaPanel, "PHANCA");
+                }
+            }
+            case "TAIKHOAN" -> {
+                if (taiKhoanPanel == null) {
+                    taiKhoanPanel = new TaiKhoanPanel();
+                    pnlContent.add(taiKhoanPanel, "TAIKHOAN");
+                }
+            }
+            default -> { return; }
+        }
+        cardLayout.show(pnlContent, trang);
+    }
+
+    private boolean damBaoDangNhapNhanSu() {
+        if (PhienDangNhap.getTaiKhoan() != null) return true;
+        try {
+            if (!nhanSuAccess.daCoTaiKhoan() && !taoQuanTriNhanSuDauTien()) return false;
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(this, "Không kiểm tra được tài khoản:\n"
+                    + ex.getMessage(), "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
+            return false;
+        }
+
+        JTextField userField = new JTextField(20);
+        JPasswordField passwordField = new JPasswordField(20);
+        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
+        form.add(new JLabel("Tên đăng nhập hệ thống nhân sự:"));
+        form.add(userField);
+        form.add(new JLabel("Mật khẩu hệ thống nhân sự:"));
+        form.add(passwordField);
+        for (int attempt = 0; attempt < 3; attempt++) {
+            if (JOptionPane.showConfirmDialog(this, form, "Đăng nhập nhân sự",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE)
+                    != JOptionPane.OK_OPTION) return false;
+            char[] password = passwordField.getPassword();
+            try {
+                TaiKhoan account = nhanSuAccess.dangNhap(userField.getText(), password);
+                if (account != null) {
+                    PhienDangNhap.setTaiKhoan(account);
+                    return true;
+                }
+                JOptionPane.showMessageDialog(this,
+                        "Sai thông tin đăng nhập, tài khoản bị khóa hoặc nhân viên đã nghỉ việc.");
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this, "Lỗi đăng nhập:\n" + ex.getMessage(),
+                        "Lỗi cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
+                return false;
+            } finally {
+                Arrays.fill(password, '\0');
+                passwordField.setText("");
+            }
+        }
+        return false;
+    }
+
+    private boolean taoQuanTriNhanSuDauTien() {
+        JTextField nameField = new JTextField(20);
+        JTextField userField = new JTextField(20);
+        JPasswordField passwordField = new JPasswordField(20);
+        JPasswordField confirmField = new JPasswordField(20);
+        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
+        form.add(new JLabel("Database chưa có tài khoản. Tạo Admin nhân sự đầu tiên:"));
+        form.add(new JLabel("Họ tên:"));
+        form.add(nameField);
+        form.add(new JLabel("Tên đăng nhập:"));
+        form.add(userField);
+        form.add(new JLabel("Mật khẩu (tối thiểu 6 ký tự):"));
+        form.add(passwordField);
+        form.add(new JLabel("Nhập lại mật khẩu:"));
+        form.add(confirmField);
+        if (JOptionPane.showConfirmDialog(this, form, "Thiết lập nhân sự lần đầu",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE)
+                != JOptionPane.OK_OPTION) return false;
+        char[] password = passwordField.getPassword();
+        char[] confirmation = confirmField.getPassword();
+        try {
+            if (!Arrays.equals(password, confirmation)) {
+                JOptionPane.showMessageDialog(this, "Hai mật khẩu không khớp.");
+                return false;
+            }
+            nhanSuAccess.taoQuanTriDauTien(
+                    nameField.getText(), userField.getText(), password);
+            JOptionPane.showMessageDialog(this,
+                    "Đã tạo Admin đầu tiên. Hãy đăng nhập để mở module nhân sự.");
+            return true;
+        } catch (SQLException | IllegalArgumentException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Không tạo được Admin", JOptionPane.ERROR_MESSAGE);
+            return false;
+        } finally {
+            Arrays.fill(password, '\0');
+            Arrays.fill(confirmation, '\0');
+        }
+    }
+
+    private void dangXuatNhanSu() {
+        if (PhienDangNhap.getTaiKhoan() == null) return;
+        PhienDangNhap.dangXuat();
+        if (nhanVienPanel != null) pnlContent.remove(nhanVienPanel);
+        if (caLamPanel != null) pnlContent.remove(caLamPanel);
+        if (phanCaPanel != null) pnlContent.remove(phanCaPanel);
+        if (taiKhoanPanel != null) pnlContent.remove(taiKhoanPanel);
+        nhanVienPanel = null;
+        caLamPanel = null;
+        phanCaPanel = null;
+        taiKhoanPanel = null;
+        cardLayout.show(pnlContent, "HOME");
+        JOptionPane.showMessageDialog(this, "Đã đăng xuất khỏi phần nhân sự.");
     }
 
     private void moManHinhHoaDon() {
