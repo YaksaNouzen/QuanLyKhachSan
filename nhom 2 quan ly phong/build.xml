@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="HotelPhongModule" default="default" basedir=".">
+    <description>Module quan ly phong cua nhom 2.</description>
+    <import file="nbproject/build-impl.xml"/>
+</project>

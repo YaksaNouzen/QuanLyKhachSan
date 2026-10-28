@@ -1,0 +1,8 @@
+# Build outputs, local database settings and downloaded libraries
+build/
+dist/
+nbproject/private/
+config/db.properties
+lib/*.jar
+lib/*.dll
+*.log
