@@ -4,7 +4,7 @@
 
 1. Tạo database trống bằng `../database/FULL_DATABASE.sql` theo hướng dẫn ở
    `../database/README.md`.
-2. Mở chính thư mục `QLDichVu_TaiChinh_PhanHoi` bằng NetBeans và chạy project
+2. Mở chính thư mục `QLKhachSan` bằng NetBeans và chạy project
    với Main Class `app.Main`.
 3. Khi mở module lần đầu, nhập JDBC URL
    tới database `QuanLyKhachSan` và tài khoản SQL Server trong hộp kết nối.

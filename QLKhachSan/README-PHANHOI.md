@@ -37,7 +37,7 @@ Thiết lập biến qua Windows “Edit environment variables for your account�
 
 ## 3. Mở và sử dụng
 
-- Bản tích hợp hiện tại: mở project `QLDichVu_TaiChinh_PhanHoi`, Main Class `app.Main`.
+- Bản tích hợp hiện tại: mở project `QLKhachSan`, Main Class `app.Main`.
 - Hoặc `java -jar dist/QLKhachSanTichHop.jar`, giữ `dist/lib` bên cạnh JAR.
 - Chọn “Quản lý phản hồi khách hàng” dưới “Quản lý dịch vụ”.
 - Tiếp nhận mới: nhập mã khách tối đa 20 ký tự, loại Đánh giá/Khiếu nại, nội dung tối đa 2000 ký tự, thời gian `dd/MM/yyyy HH:mm:ss`, người tiếp nhận tùy chọn tối đa 100 ký tự.
