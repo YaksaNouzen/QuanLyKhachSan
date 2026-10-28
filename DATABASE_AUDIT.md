@@ -217,13 +217,28 @@ Sau khi duyệt các quyết định ở mục 7, bộ database tích hợp nên
 9. `08_sample_data.sql`: dữ liệu demo có thể chạy riêng.
 10. `FULL_DATABASE.sql`: bản ghép theo đúng thứ tự để thành viên dễ dựng DB.
 
-## 7. Bốn quyết định cần xác nhận trước khi viết master SQL
+## 7. Quyết định schema đã được xác nhận
 
-1. Database chung có dùng tên `QuanLyKhachSan` không?
-2. Bảng `DichVu` có lấy schema Nhóm 5 và khóa `INT IDENTITY` làm chuẩn không?
-3. Dùng `SuDungDichVu` của Nhóm 1 hay cặp
-   `PhieuSuDung`/`ChiTietSuDung` của Nhóm 5 để ghi nhận dịch vụ khách dùng?
-4. `PhongDanhGiaNhan`/`PhongPhanAnhNhan` có được thay bằng module `PhanHoi`
-   hay vẫn giữ như bảng tích hợp riêng?
+Các quyết định sau được xác nhận ngày 2026-10-28:
 
-Chỉ sau khi bốn mục này được chốt mới nên viết hoặc chạy master schema.
+1. Database chung dùng tên `QuanLyKhachSan`.
+2. Bảng `DichVu` lấy schema Nhóm 5, khóa chính `MaDV INT IDENTITY`.
+3. Dùng `SuDungDichVu` của Nhóm 1 để ghi nhận dịch vụ khách dùng; đổi khóa
+   dịch vụ của bảng này sang `INT`. Không đưa `PhieuSuDung` và
+   `ChiTietSuDung` vào master schema.
+4. Module `PhanHoi`/`LichSuXuLyPhanHoi` của Nhóm 5 là chức năng phản hồi
+   chính. Không đưa `PhongDanhGiaNhan` và `PhongPhanAnhNhan` vào master schema.
+
+Theo bốn quyết định này, master schema dự kiến có 31 bảng.
+
+## 8. Cách bổ sung database sau này
+
+- `FULL_DATABASE.sql` là bản đầy đủ mới nhất để dựng database mới.
+- Database đã có dữ liệu chỉ được thay đổi bằng patch đánh số tăng dần trong
+  `database/patches`, ví dụ `001_them_cot.sql`, `002_them_bang.sql`.
+- Patch phải chọn đúng database, kiểm tra đối tượng đã tồn tại, dùng
+  transaction khi có nhiều thao tác và không tự xóa dữ liệu.
+- Sau khi patch được kiểm thử, thay đổi tương ứng phải được cập nhật vào các
+  script thành phần và `FULL_DATABASE.sql`.
+- Không sửa ngược một patch đã được chia sẻ; nếu cần sửa tiếp thì tạo patch
+  mới để mọi máy có cùng lịch sử thay đổi.
