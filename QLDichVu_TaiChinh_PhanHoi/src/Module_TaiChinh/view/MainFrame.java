@@ -5,6 +5,9 @@ import Module_PhanHoi.view.PhanHoiPanel;
 import common.database.ConnectionFactory;
 import common.database.DatabaseConnection;
 import java.awt.*;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.Arrays;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import module.baotri.controller.BaoTriController;
@@ -38,6 +41,7 @@ public class MainFrame extends JFrame {
     private PhongPanel phongPanel;
     private BuongPhongPanel buongPhongPanel;
     private BaoTriPanel baoTriPanel;
+    private boolean daKiemTraKetNoiChung;
 
     public MainFrame() {
         setTitle("HỆ THỐNG QUẢN LÝ KHÁCH SẠN");
@@ -226,6 +230,7 @@ public class MainFrame extends JFrame {
     }
 
     private void moManHinhLeTan(String trang) {
+        if (!damBaoKetNoiChung()) return;
         if (leTanPanel == null) {
             leTanPanel = new DatPhongView();
             pnlContent.add(leTanPanel, "LE_TAN");
@@ -259,12 +264,71 @@ public class MainFrame extends JFrame {
     }
 
     private void moManHinhNhom2(String trang) {
+        if (!damBaoKetNoiChung()) return;
         khoiTaoNhom2();
         cardLayout.show(pnlContent, trang);
         switch (trang) {
             case "BUONGPHONG" -> buongPhongController.refresh();
             case "BAOTRI" -> baoTriController.refresh();
             default -> phongController.refresh();
+        }
+    }
+
+    private boolean damBaoKetNoiChung() {
+        if (daKiemTraKetNoiChung) return true;
+
+        if (DatabaseConnection.hasConfiguredCredentials()) {
+            try (Connection connection = DatabaseConnection.getConnection()) {
+                daKiemTraKetNoiChung = true;
+                return true;
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(this,
+                        "Kết nối đã cấu hình chưa dùng được:\n" + ex.getMessage()
+                        + "\nHãy kiểm tra lại máy chủ, database và tài khoản.",
+                        "Kết nối cơ sở dữ liệu", JOptionPane.WARNING_MESSAGE);
+            }
+        }
+
+        JTextField urlField = new JTextField(DatabaseConnection.getDefaultUrl(), 42);
+        JTextField userField = new JTextField(DatabaseConnection.getDefaultUsername(), 24);
+        JPasswordField passwordField = new JPasswordField(24);
+        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
+        form.add(new JLabel("JDBC URL (máy chủ và database QuanLyKhachSan):"));
+        form.add(urlField);
+        form.add(new JLabel("Tài khoản SQL Server:"));
+        form.add(userField);
+        form.add(new JLabel("Mật khẩu:"));
+        form.add(passwordField);
+
+        while (true) {
+            int choice = JOptionPane.showConfirmDialog(this, form,
+                    "Kết nối database cho Khách hàng, Đặt phòng và Phòng",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+            if (choice != JOptionPane.OK_OPTION) return false;
+
+            char[] password = passwordField.getPassword();
+            if (urlField.getText().isBlank() || userField.getText().isBlank()
+                    || password.length == 0) {
+                JOptionPane.showMessageDialog(this,
+                        "Hãy nhập đủ JDBC URL, tài khoản và mật khẩu.",
+                        "Thiếu thông tin kết nối", JOptionPane.WARNING_MESSAGE);
+                Arrays.fill(password, '\0');
+                continue;
+            }
+            DatabaseConnection.configureForCurrentRun(
+                    urlField.getText().trim(), userField.getText().trim(), password);
+            Arrays.fill(password, '\0');
+            passwordField.setText("");
+            try (Connection connection = DatabaseConnection.getConnection()) {
+                daKiemTraKetNoiChung = true;
+                return true;
+            } catch (SQLException ex) {
+                DatabaseConnection.clearRuntimeCredentials();
+                JOptionPane.showMessageDialog(this,
+                        "Chưa kết nối được:\n" + ex.getMessage()
+                        + "\nKiểm tra tên instance, cổng, database và quyền tài khoản.",
+                        "Lỗi kết nối cơ sở dữ liệu", JOptionPane.ERROR_MESSAGE);
+            }
         }
     }
 
