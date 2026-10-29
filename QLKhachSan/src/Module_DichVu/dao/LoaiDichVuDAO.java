@@ -13,6 +13,20 @@ import java.util.List;
 
 public class LoaiDichVuDAO {
 
+    public LoaiDichVu insert(String tenLoai, String moTa) throws SQLException {
+        String sql = "INSERT INTO dbo.LoaiDichVu (TenLoaiDV, MoTa) "
+                + "OUTPUT INSERTED.MaLoaiDV VALUES (?, ?)";
+        try (Connection conn = DBConnection.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, tenLoai);
+            ps.setString(2, moTa.isEmpty() ? null : moTa);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (!rs.next()) throw new SQLException("Khong lay duoc ma loai dich vu moi.");
+                return new LoaiDichVu(rs.getInt(1), tenLoai);
+            }
+        }
+    }
+
     public List<LoaiDichVu> getAll() throws SQLException {
 
         List<LoaiDichVu> danhSach = new ArrayList<>();

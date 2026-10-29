@@ -48,6 +48,22 @@ public class DichVuService {
         }
     }
 
+    public LoaiDichVu themLoaiDichVu(String tenLoai, String moTa) {
+        String ten = batBuoc(tenLoai, "Tên loại dịch vụ", 100);
+        String moTaDaChuanHoa = chuanHoa(moTa);
+        if (moTaDaChuanHoa.length() > 255) {
+            throw new IllegalArgumentException("Mô tả không được quá 255 ký tự.");
+        }
+        try {
+            return loaiDichVuDAO.insert(ten, moTaDaChuanHoa);
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 2601 || e.getErrorCode() == 2627) {
+                throw new IllegalArgumentException("Tên loại dịch vụ đã tồn tại.", e);
+            }
+            throw loiDuLieu("Không thể thêm loại dịch vụ.", e);
+        }
+    }
+
     public List<DichVu> timTheoTen(String tuKhoa) {
         String giaTri = chuanHoa(tuKhoa);
         if (giaTri.isEmpty()) {
