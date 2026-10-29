@@ -27,6 +27,13 @@ public final class PhongServiceTest {
         service.ngungSuDung("P102");
         check(service.getPhong("P102").ngungSuDung(), "phong duoc ngung su dung mem");
         check(service.getPhongTrong().size() == 8, "phong ngung khong nam trong danh sach trong");
+        service.kichHoatLai("P102");
+        check(!service.getPhong("P102").ngungSuDung(), "phong duoc kich hoat lai");
+        dao.setPhongDangCoKhach("P102", true);
+        expect(() -> service.xoaPhongChuaDung("P102"));
+        dao.setPhongDangCoKhach("P102", false);
+        service.xoaPhongChuaDung("P102");
+        check(service.taiDuLieu().phongs().size() == 8, "phong mau chua dung duoc xoa");
         expect(() -> service.xoaLoai("STD"));
         System.out.println("PhongServiceTest PASS");
     }

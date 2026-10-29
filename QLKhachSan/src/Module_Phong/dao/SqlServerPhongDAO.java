@@ -161,6 +161,17 @@ public class SqlServerPhongDAO implements PhongDAO {
             update("UPDATE dbo.Phong SET NgungSuDung=? WHERE MaPhong=?", ngungSuDung, maPhong);
         }
 
+        public void xoaPhong(String maPhong) {
+            try {
+                update("DELETE dbo.Phong WHERE MaPhong=?", maPhong);
+            } catch (IllegalArgumentException ex) {
+                if (ex.getCause() instanceof SQLException sql && sql.getErrorCode() == 547)
+                    throw new IllegalArgumentException(
+                            "Phòng đã có dữ liệu liên quan nên không thể xóa. Hãy ngừng sử dụng phòng.", ex);
+                throw ex;
+            }
+        }
+
         public void luuLoai(LoaiPhong loai, boolean sua) {
             update(sua
                             ? "UPDATE dbo.LoaiPhong SET TenLoai=?,SoNguoiToiDa=?,GiaTheoNgay=? WHERE MaLoaiPhong=?"

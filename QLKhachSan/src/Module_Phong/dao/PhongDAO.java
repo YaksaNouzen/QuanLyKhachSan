@@ -24,6 +24,7 @@ public interface PhongDAO {
         void capNhatTrangThai(String maPhong, TrangThaiPhong tu, TrangThaiPhong den);
 
         void datNgungSuDung(String maPhong, boolean ngungSuDung);
+        void xoaPhong(String maPhong);
 
         void luuLoai(LoaiPhong loai, boolean sua);
 

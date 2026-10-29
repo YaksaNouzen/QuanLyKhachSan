@@ -175,6 +175,28 @@ public class PhongService {
         });
     }
 
+    public void kichHoatLai(String maPhong) {
+        tx(s -> {
+            Phong phong = s.phong(maPhong);
+            require(phong.ngungSuDung() && phong.trangThai() == TRONG,
+                    "Chi kich hoat lai phong da ngung va dang trong.");
+            s.datNgungSuDung(maPhong, false);
+            return null;
+        });
+    }
+
+    public void xoaPhongChuaDung(String maPhong) {
+        tx(s -> {
+            Phong phong = s.phong(maPhong);
+            require(phong.trangThai() == TRONG, "Chi xoa duoc phong dang trong.");
+            require(!s.phongDangCoKhach(maPhong) && !s.phongConDonGiu(maPhong),
+                    "Phong dang co khach hoac don giu phong.");
+            // SQL Server sẽ từ chối DELETE nếu còn bất kỳ khóa ngoại lịch sử nào.
+            s.xoaPhong(maPhong);
+            return null;
+        });
+    }
+
     public static PhongService demo() {
         return demo(new MemoryPhongDAO());
     }
