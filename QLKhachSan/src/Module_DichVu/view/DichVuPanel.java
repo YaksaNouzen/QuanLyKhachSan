@@ -11,19 +11,21 @@ import java.awt.*;
 import java.util.List;
 
 public class DichVuPanel extends JPanel {
-private void taiDanhSachLoai() {
-
-    try {
-        cboLoaiDV.removeAllItems();
-
-        for (LoaiDichVu loai : controller.layDanhSachLoai()) {
-            cboLoaiDV.addItem(loai);
-        }
-
-    } catch (IllegalStateException e) {
-        baoLoi(e);
+    private void taiDanhSachLoai() {
+        taiDanhSachLoai(-1);
     }
-}
+
+    private void taiDanhSachLoai(int maCanChon) {
+        try {
+            cboLoaiDV.removeAllItems();
+            for (LoaiDichVu loai : controller.layDanhSachLoai()) {
+                cboLoaiDV.addItem(loai);
+                if (loai.getMaLoaiDV() == maCanChon) cboLoaiDV.setSelectedItem(loai);
+            }
+        } catch (IllegalStateException e) {
+            baoLoi(e);
+        }
+    }
     private final DichVuController controller;
 
     // Cac o nhap lieu
@@ -91,6 +93,13 @@ private void taiDanhSachLoai() {
         txtMaDV.setEditable(false);
         txtMaDV.setBackground(new Color(240, 240, 240));
         cboLoaiDV = new JComboBox<>();
+        cboLoaiDV.setToolTipText("Nếu danh sách trống, bấm + Loại để tạo loại dịch vụ.");
+        JButton btnThemLoai = taoNut("+ Loại", new Color(39, 145, 87));
+        btnThemLoai.addActionListener(e -> themLoaiDichVu());
+        JPanel chonLoai = new JPanel(new BorderLayout(6, 0));
+        chonLoai.setOpaque(false);
+        chonLoai.add(cboLoaiDV, BorderLayout.CENTER);
+        chonLoai.add(btnThemLoai, BorderLayout.EAST);
         txtTenDV = new JTextField(15);
         txtDonGia = new JTextField(15);
         txtDonViTinh = new JTextField(15);
@@ -101,7 +110,7 @@ private void taiDanhSachLoai() {
         JPanel form = new JPanel(new GridBagLayout());
         form.setBackground(Color.WHITE);
         themTruong(form, "Mã dịch vụ:", txtMaDV, 0, 0);
-        themTruong(form, "Loại dịch vụ:", cboLoaiDV, 2, 0);
+        themTruong(form, "Loại dịch vụ:", chonLoai, 2, 0);
         themTruong(form, "Tên dịch vụ:", txtTenDV, 0, 1);
         themTruong(form, "Đơn giá (VNĐ):", txtDonGia, 2, 1);
         themTruong(form, "Đơn vị tính:", txtDonViTinh, 0, 2);
@@ -176,6 +185,7 @@ private void taiDanhSachLoai() {
         btnLamMoi.addActionListener(e -> {
             txtTimKiem.setText("");
             xoaTrangForm();
+            taiDanhSachLoai();
             taiDanhSach();
         });
         btnKhoiPhuc.addActionListener(e -> khoiPhucDichVu());
@@ -185,6 +195,27 @@ private void taiDanhSachLoai() {
                 hienThiThongTin();
             }
         });
+    }
+
+    private void themLoaiDichVu() {
+        JTextField ten = new JTextField(22);
+        JTextField moTa = new JTextField(22);
+        JPanel form = new JPanel(new GridLayout(2, 2, 8, 8));
+        form.add(new JLabel("Tên loại dịch vụ:"));
+        form.add(ten);
+        form.add(new JLabel("Mô tả (tùy chọn):"));
+        form.add(moTa);
+        if (JOptionPane.showConfirmDialog(this, form, "Thêm loại dịch vụ",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) != JOptionPane.OK_OPTION) return;
+        try {
+            LoaiDichVu daTao = controller.themLoaiDichVu(ten.getText(), moTa.getText());
+            taiDanhSachLoai(daTao.getMaLoaiDV());
+            JOptionPane.showMessageDialog(this, "Đã thêm loại dịch vụ " + daTao.getTenLoaiDV() + ".");
+        } catch (IllegalArgumentException e) {
+            baoDuLieuKhongHopLe(e);
+        } catch (IllegalStateException e) {
+            baoLoi(e);
+        }
     }
 
     private void ghiNhanSuDung() {

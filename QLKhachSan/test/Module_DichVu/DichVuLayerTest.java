@@ -8,10 +8,13 @@ import Module_DichVu.model.LoaiDichVu;
 import Module_DichVu.service.DichVuService;
 import Module_DichVu.view.DichVuPanel;
 
+import java.awt.Component;
+import java.awt.Container;
 import java.math.BigDecimal;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JButton;
 import javax.swing.SwingUtilities;
 
 /** Kiem thu offline, khong ket noi va khong ghi vao SQL Server. */
@@ -23,8 +26,25 @@ public final class DichVuLayerTest {
         DichVuService service = new DichVuService(dichVuDAO, loaiDAO);
         DichVuController controller = new DichVuController(service);
 
-        kiemTra(controller.layDanhSachLoai().size() == 1,
-                "Khong tai duoc loai dich vu qua Controller/Service.");
+        kiemTra(controller.layDanhSachLoai().isEmpty(),
+                "Database moi phai bat dau voi danh sach loai rong.");
+        SwingUtilities.invokeAndWait(() -> {
+            DichVuPanel panel = new DichVuPanel(controller);
+            kiemTra(panel.getComponentCount() == 3,
+                    "Man hinh dich vu khong mo duoc khi chua co loai.");
+            kiemTra(coNut(panel, "+ Loại"),
+                    "Khong co nut tao loai khi danh sach rong.");
+        });
+        mongDoiLoi(() -> controller.themLoaiDichVu("  ", ""), "khong duoc de trong");
+        LoaiDichVu loaiDauTien = controller.themLoaiDichVu("  An uong  ", "");
+        kiemTra(loaiDauTien.getMaLoaiDV() == 1
+                        && controller.layDanhSachLoai().size() == 1,
+                "Khong tao duoc loai dich vu dau tien.");
+        LoaiDichVu loaiMoi = controller.themLoaiDichVu("  Giat ui  ", "  Quan ao  ");
+        kiemTra(loaiMoi.getMaLoaiDV() == 2 && "Giat ui".equals(loaiMoi.getTenLoaiDV())
+                        && controller.layDanhSachLoai().size() == 2,
+                "Khong tao va tai lai duoc loai dich vu moi.");
+        mongDoiLoi(() -> controller.themLoaiDichVu("Giat ui", ""), "tồn tại");
 
         kiemTra(controller.themDichVu(1, "  An sang  ",
                 "80000.125", " Suat ", "  Buffet  ", true),
@@ -84,6 +104,16 @@ public final class DichVuLayerTest {
         }
     }
 
+    private static boolean coNut(Component component, String tenNut) {
+        if (component instanceof JButton button && tenNut.equals(button.getText())) return true;
+        if (component instanceof Container container) {
+            for (Component con : container.getComponents()) {
+                if (coNut(con, tenNut)) return true;
+            }
+        }
+        return false;
+    }
+
     private static final class FakeDichVuDAO extends DichVuDAO {
         private final List<DichVu> duLieu = new ArrayList<>();
         private DichVu daThem;
@@ -136,9 +166,21 @@ public final class DichVuLayerTest {
 
     private static final class FakeLoaiDichVuDAO
             extends LoaiDichVuDAO {
+        private final List<LoaiDichVu> duLieu = new ArrayList<>();
+
         @Override
         public List<LoaiDichVu> getAll() throws SQLException {
-            return List.of(new LoaiDichVu(1, "An uong"));
+            return new ArrayList<>(duLieu);
+        }
+
+        @Override
+        public LoaiDichVu insert(String ten, String moTa) throws SQLException {
+            if (duLieu.stream().anyMatch(loai -> loai.getTenLoaiDV().equalsIgnoreCase(ten))) {
+                throw new SQLException("Trung ten", "23000", 2627);
+            }
+            LoaiDichVu moi = new LoaiDichVu(duLieu.size() + 1, ten);
+            duLieu.add(moi);
+            return moi;
         }
     }
 }

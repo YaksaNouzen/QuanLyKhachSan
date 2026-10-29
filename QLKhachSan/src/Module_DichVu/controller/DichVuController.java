@@ -32,6 +32,10 @@ public class DichVuController {
         return service.layDanhSachLoai();
     }
 
+    public LoaiDichVu themLoaiDichVu(String tenLoai, String moTa) {
+        return service.themLoaiDichVu(tenLoai, moTa);
+    }
+
     public List<DichVu> timTheoTen(String tuKhoa) {
         return service.timTheoTen(tuKhoa);
     }
