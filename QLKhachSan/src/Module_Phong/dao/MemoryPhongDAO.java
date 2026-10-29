@@ -98,6 +98,11 @@ public class MemoryPhongDAO implements PhongDAO {
                     cu.giaPhong(), cu.trangThai(), ngungSuDung));
         }
 
+        public void xoaPhong(String maPhong) {
+            phong(maPhong);
+            phongs.remove(maPhong);
+        }
+
         public void luuLoai(LoaiPhong loai, boolean sua) {
             if (!sua && loais.containsKey(loai.maLoaiPhong()))
                 throw new IllegalArgumentException("Ma loai phong da ton tai.");

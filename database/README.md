@@ -14,6 +14,18 @@ chứa tài khoản/mật khẩu và không trộn dữ liệu mẫu vào schema
 Không chạy file này đè lên database đang có bảng. Database đã có dữ liệu phải
 dùng patch mới trong `database/patches`.
 
+## Tạo dữ liệu phòng để thử đặt phòng
+
+Sau khi dựng schema, có thể chạy riêng `SEED_70_PHONG.sql` trong SSMS. File tạo
+tầng 2–8, ba hạng STD/DLX/PRS và 70 phòng: STD 14 phòng/tầng ở tầng 2–4,
+DLX 8 phòng/tầng ở tầng 5–7, PRS 4 phòng ở tầng 8. Giá niêm yết/đêm lần lượt
+là 1.000.000, 7.000.000 và 15.000.000 VND; sức chứa tối đa 2, 4 và 7 người.
+File không xóa hoặc ghi đè phòng có sẵn; nếu số phòng hay hạng hiện có khác
+cấu hình này, toàn bộ lần chạy sẽ dừng và hoàn tác. Đọc danh sách `SELECT`
+cuối file để kiểm tra đủ 70 phòng trước khi thử đặt phòng.
+Nếu đã có hạng tương đương với mã khác (ví dụ `STD001`), file dùng lại hạng đó
+khi giá và sức chứa khớp, không tự đổi mã hạng cũ.
+
 ## Cấp mã tự động
 
 Các bảng dùng khóa `INT/BIGINT IDENTITY` tự nhận mã khi `INSERT`, gồm

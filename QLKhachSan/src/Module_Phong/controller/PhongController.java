@@ -126,6 +126,14 @@ public class PhongController {
         run(() -> service.ngungSuDung(maPhong), success);
     }
 
+    public void reactivateRoom(String maPhong, Runnable success) {
+        run(() -> service.kichHoatLai(maPhong), success);
+    }
+
+    public void deleteUnusedRoom(String maPhong, Runnable success) {
+        run(() -> service.xoaPhongChuaDung(maPhong), success);
+    }
+
     public void deleteType(String maLoai, Runnable success) {
         run(() -> service.xoaLoai(maLoai), success);
     }
