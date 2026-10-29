@@ -12,10 +12,14 @@ import Module_NhapHang.view.PhieuNhapPanel;
 import Module_KhoVatTu.view.VatTuPanel;
 import common.database.ConnectionFactory;
 import common.database.DatabaseConnection;
+import common.ui.ColoredButton;
+import app.security.QuyenTruyCap;
 import java.awt.*;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import Module_BaoTri.controller.BaoTriController;
@@ -41,8 +45,37 @@ import Module_TaiKhoanPhanQuyen.view.TaiKhoanPanel;
 
 public class MainFrame extends JFrame {
 
+    private static final List<DashboardPanel.MenuGroup> MENU_GROUPS = List.of(
+            new DashboardPanel.MenuGroup("Lễ tân & lưu trú", "Khách, đặt và nhận/trả phòng", List.of(
+                    new DashboardPanel.MenuItem("Khách hàng", "KHACHHANG"),
+                    new DashboardPanel.MenuItem("Đặt phòng", "DATPHONG"),
+                    new DashboardPanel.MenuItem("Nhận / trả phòng", "LUUTRU"))),
+            new DashboardPanel.MenuGroup("Phòng & vận hành", "Phòng, buồng phòng, bảo trì", List.of(
+                    new DashboardPanel.MenuItem("Quản lý phòng", "PHONG"),
+                    new DashboardPanel.MenuItem("Buồng phòng", "BUONGPHONG"),
+                    new DashboardPanel.MenuItem("Bảo trì", "BAOTRI"))),
+            new DashboardPanel.MenuGroup("Nhân sự & hệ thống", "Nhân viên, ca và tài khoản", List.of(
+                    new DashboardPanel.MenuItem("Nhân viên", "NHANVIEN"),
+                    new DashboardPanel.MenuItem("Ca làm", "CALAM"),
+                    new DashboardPanel.MenuItem("Lịch trực & bàn giao", "PHANCA"),
+                    new DashboardPanel.MenuItem("Tài khoản & phân quyền", "TAIKHOAN"))),
+            new DashboardPanel.MenuGroup("Kho & cung ứng", "Vật tư, nhà cung cấp, nhập hàng", List.of(
+                    new DashboardPanel.MenuItem("Kho vật tư", "VATTU"),
+                    new DashboardPanel.MenuItem("Nhà cung cấp", "NHACUNGCAP"),
+                    new DashboardPanel.MenuItem("Nhập hàng", "PHIEUNHAP"))),
+            new DashboardPanel.MenuGroup("Tài chính & dịch vụ", "Hóa đơn, dịch vụ và phản hồi", List.of(
+                    new DashboardPanel.MenuItem("Hóa đơn", "HOADON"),
+                    new DashboardPanel.MenuItem("Chi tiết hóa đơn", "CHITIET"),
+                    new DashboardPanel.MenuItem("Thanh toán", "THANHTOAN"),
+                    new DashboardPanel.MenuItem("Thống kê tài chính", "THONGKE"),
+                    new DashboardPanel.MenuItem("Quản lý dịch vụ", "DICHVU"),
+                    new DashboardPanel.MenuItem("Phản hồi khách hàng", "PHANHOI"))));
+
     private final JPanel pnlContent;
     private final CardLayout cardLayout;
+    private final DashboardPanel dashboard;
+    private final List<JPanel> nhomDangMo = new ArrayList<>();
+    private final List<Runnable> capNhatMenu = new ArrayList<>();
     private DichVuPanel dichVuPanel;
     private PhanHoiPanel phanHoiPanel;
     private HoaDonPanel hoaDonPanel;
@@ -103,67 +136,21 @@ public class MainFrame extends JFrame {
         pnlContent = new JPanel(cardLayout);
         pnlContent.setBackground(new Color(245, 247, 250));
 
-        pnlContent.add(
-                taoTrangCho("Trang chủ",
-                        "Chào mừng đến hệ thống quản lý khách sạn."),
-                "HOME");
+        dashboard = new DashboardPanel(MENU_GROUPS, this::moTrang, this::dangNhapTuTrangChu);
+        pnlContent.add(dashboard, "HOME");
 
         // Them cac muc dieu huong
         pnlSidebar.add(taoNutMenu("Trang chủ", "HOME"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Quản lý khách hàng", "KHACHHANG"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Quản lý đặt phòng", "DATPHONG"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Nhận / trả phòng", "LUUTRU"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Quản lý phòng", "PHONG"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Buồng phòng", "BUONGPHONG"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Bảo trì", "BAOTRI"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Kho vật tư", "VATTU"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Nhà cung cấp", "NHACUNGCAP"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Nhập hàng", "PHIEUNHAP"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Nhân viên", "NHANVIEN"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Ca làm", "CALAM"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Lịch trực & bàn giao", "PHANCA"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Tài khoản & phân quyền", "TAIKHOAN"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Đăng xuất nhân sự", "DANGXUAT_NHANSU"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Quản lý hóa đơn", "HOADON"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Chi tiết hóa đơn", "CHITIET"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Thanh toán", "THANHTOAN"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-
-        pnlSidebar.add(taoNutMenu("Thống kê tài chính", "THONGKE"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("Quản lý dịch vụ", "DICHVU"));
-        pnlSidebar.add(Box.createVerticalStrut(8));
-        pnlSidebar.add(taoNutMenu("<html>Quản lý phản hồi<br>khách hàng</html>", "PHANHOI"));
+        pnlSidebar.add(Box.createVerticalStrut(12));
+        for (DashboardPanel.MenuGroup group : MENU_GROUPS) {
+            pnlSidebar.add(taoNhomMenu(group));
+            pnlSidebar.add(Box.createVerticalStrut(5));
+        }
+        capNhatQuyenMenu();
 
         pnlSidebar.add(Box.createVerticalGlue());
+        pnlSidebar.add(taoNutMenu("Đăng xuất nhân sự", "DANGXUAT_NHANSU"));
+        pnlSidebar.add(Box.createVerticalStrut(12));
 
         JLabel lblFooter = new JLabel("Phiên bản 1.0");
         lblFooter.setForeground(new Color(190, 205, 225));
@@ -174,7 +161,7 @@ public class MainFrame extends JFrame {
                 pnlSidebar,
                 ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
                 ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-        sidebarScroll.setPreferredSize(new Dimension(235, 0));
+        sidebarScroll.setPreferredSize(new Dimension(225, 0));
         sidebarScroll.setBorder(null);
         sidebarScroll.getViewport().setBackground(new Color(23, 54, 93));
         sidebarScroll.getVerticalScrollBar().setUnitIncrement(18);
@@ -187,7 +174,8 @@ public class MainFrame extends JFrame {
     }
 
     private JButton taoNutMenu(String ten, String maTrang) {
-        JButton btn = new JButton(ten);
+        JButton btn = new ColoredButton(ten,
+                new Color(35, 78, 125), new Color(53, 106, 164), Color.WHITE);
 
         btn.setMaximumSize(new Dimension(
                 Integer.MAX_VALUE, 45));
@@ -196,89 +184,105 @@ public class MainFrame extends JFrame {
 
         btn.setFont(new Font("Arial", Font.PLAIN, 14));
         btn.setForeground(Color.WHITE);
-        btn.setBackground(new Color(23, 54, 93));
-        btn.setFocusPainted(false);
-        btn.setBorderPainted(false);
         btn.setHorizontalAlignment(SwingConstants.LEFT);
         btn.setBorder(new EmptyBorder(10, 15, 10, 10));
         btn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        btn.addActionListener(e -> {
-            switch (maTrang) {
-                case "KHACHHANG" -> moManHinhLeTan("KHACHHANG");
-                case "DATPHONG" -> moManHinhLeTan("DATPHONG");
-                case "LUUTRU" -> moManHinhLeTan("LUUTRU");
-                case "PHONG" -> moManHinhNhom2("PHONG");
-                case "BUONGPHONG" -> moManHinhNhom2("BUONGPHONG");
-                case "BAOTRI" -> moManHinhNhom2("BAOTRI");
-                case "VATTU", "NHACUNGCAP", "PHIEUNHAP" -> moManHinhKho(maTrang);
-                case "NHANVIEN", "CALAM", "PHANCA", "TAIKHOAN" -> moManHinhNhanSu(maTrang);
-                case "DANGXUAT_NHANSU" -> dangXuatNhanSu();
-                case "HOADON" -> moManHinhHoaDon();
-                case "CHITIET" -> moManHinhChiTietHoaDon();
-                case "THANHTOAN" -> moManHinhThanhToan();
-                case "THONGKE" -> moManHinhThongKeTaiChinh();
-                case "DICHVU" -> moManHinhDichVu();
-                case "PHANHOI" -> moManHinhPhanHoi();
-                default -> cardLayout.show(pnlContent, maTrang);
-            }
-        });
-
-        // Tao trang tam cho cac chuc nang chua xay dung
-        if (!"HOME".equals(maTrang)
-                && !"KHACHHANG".equals(maTrang)
-                && !"DATPHONG".equals(maTrang)
-                && !"LUUTRU".equals(maTrang)
-                && !"PHONG".equals(maTrang)
-                && !"BUONGPHONG".equals(maTrang)
-                && !"BAOTRI".equals(maTrang)
-                && !"VATTU".equals(maTrang)
-                && !"NHACUNGCAP".equals(maTrang)
-                && !"PHIEUNHAP".equals(maTrang)
-                && !"NHANVIEN".equals(maTrang)
-                && !"CALAM".equals(maTrang)
-                && !"PHANCA".equals(maTrang)
-                && !"TAIKHOAN".equals(maTrang)
-                && !"DANGXUAT_NHANSU".equals(maTrang)
-                && !"HOADON".equals(maTrang)
-                && !"CHITIET".equals(maTrang)
-                && !"THANHTOAN".equals(maTrang)
-                && !"THONGKE".equals(maTrang)
-                && !"DICHVU".equals(maTrang)
-                && !"PHANHOI".equals(maTrang)) {
-            pnlContent.add(
-                    taoTrangCho(ten,
-                            "Chức năng này sẽ được xây dựng ở bước tiếp theo."),
-                    maTrang);
-        }
-
+        btn.addActionListener(e -> moTrang(maTrang));
         return btn;
     }
 
-    private JPanel taoTrangCho(String tieuDe, String moTa) {
-        JPanel panel = new JPanel(new GridBagLayout());
-        panel.setBackground(new Color(245, 247, 250));
+    private JPanel taoNhomMenu(DashboardPanel.MenuGroup group) {
+        JPanel wrapper = new JPanel();
+        wrapper.setLayout(new BoxLayout(wrapper, BoxLayout.Y_AXIS));
+        wrapper.setBackground(new Color(23, 54, 93));
+        wrapper.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JPanel items = new JPanel();
+        items.setLayout(new BoxLayout(items, BoxLayout.Y_AXIS));
+        items.setBackground(new Color(23, 54, 93));
+        items.setVisible(false);
+        nhomDangMo.add(items);
+        JButton toggle = new ColoredButton(group.ten() + "  ▾",
+                new Color(45, 91, 141), new Color(65, 119, 177), Color.WHITE);
+        toggle.setMaximumSize(new Dimension(Integer.MAX_VALUE, 42));
+        toggle.setAlignmentX(Component.CENTER_ALIGNMENT);
+        toggle.setFont(new Font("Segoe UI", Font.BOLD, 12));
+        toggle.setHorizontalAlignment(SwingConstants.LEFT);
+        toggle.setBorder(new EmptyBorder(8, 10, 8, 4));
+        toggle.addActionListener(e -> {
+            boolean mo = !items.isVisible();
+            for (JPanel panel : nhomDangMo) panel.setVisible(false);
+            items.setVisible(mo);
+            wrapper.revalidate();
+            wrapper.repaint();
+        });
+        wrapper.add(toggle);
+        List<JButton> buttons = new ArrayList<>();
+        for (DashboardPanel.MenuItem item : group.chucNang()) {
+            JButton child = taoNutMenu("  " + item.ten(), item.maTrang());
+            child.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            child.setMaximumSize(new Dimension(Integer.MAX_VALUE, 34));
+            items.add(child);
+            buttons.add(child);
+        }
+        wrapper.add(items);
+        capNhatMenu.add(() -> {
+            TaiKhoan account = PhienDangNhap.getTaiKhoan();
+            int visible = 0;
+            for (int i = 0; i < buttons.size(); i++) {
+                boolean allowed = account == null || QuyenTruyCap.duocMo(
+                        account.getMaVaiTro(), group.chucNang().get(i).maTrang());
+                buttons.get(i).setVisible(allowed);
+                if (allowed) visible++;
+            }
+            items.setVisible(false);
+            wrapper.setVisible(visible > 0);
+        });
+        return wrapper;
+    }
 
-        JPanel box = new JPanel();
-        box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.setBackground(Color.WHITE);
-        box.setBorder(new EmptyBorder(35, 45, 35, 45));
+    private void capNhatQuyenMenu() {
+        for (Runnable update : capNhatMenu) update.run();
+        dashboard.capNhatQuyen();
+    }
 
-        JLabel lblTitle = new JLabel(tieuDe);
-        lblTitle.setFont(new Font("Arial", Font.BOLD, 25));
-        lblTitle.setForeground(new Color(23, 54, 93));
-        lblTitle.setAlignmentX(Component.LEFT_ALIGNMENT);
+    private void moTrang(String maTrang) {
+        if (!"HOME".equals(maTrang) && !"DANGXUAT_NHANSU".equals(maTrang)) {
+            if (!damBaoKetNoiChung() || !damBaoDangNhapNhanSu()) return;
+            TaiKhoan account = PhienDangNhap.getTaiKhoan();
+            if (!QuyenTruyCap.duocMo(account.getMaVaiTro(), maTrang)) {
+                JOptionPane.showMessageDialog(this,
+                        "Vai trò hiện tại không có quyền mở chức năng này.",
+                        "Không có quyền truy cập", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+        }
+        switch (maTrang) {
+            case "HOME" -> {
+                cardLayout.show(pnlContent, "HOME");
+                dashboard.taiLai();
+            }
+            case "KHACHHANG" -> moManHinhLeTan("KHACHHANG");
+            case "DATPHONG" -> moManHinhLeTan("DATPHONG");
+            case "LUUTRU" -> moManHinhLeTan("LUUTRU");
+            case "PHONG" -> moManHinhNhom2("PHONG");
+            case "BUONGPHONG" -> moManHinhNhom2("BUONGPHONG");
+            case "BAOTRI" -> moManHinhNhom2("BAOTRI");
+            case "VATTU", "NHACUNGCAP", "PHIEUNHAP" -> moManHinhKho(maTrang);
+            case "NHANVIEN", "CALAM", "PHANCA", "TAIKHOAN" -> moManHinhNhanSu(maTrang);
+            case "DANGXUAT_NHANSU" -> dangXuatNhanSu();
+            case "HOADON" -> moManHinhHoaDon();
+            case "CHITIET" -> moManHinhChiTietHoaDon();
+            case "THANHTOAN" -> moManHinhThanhToan();
+            case "THONGKE" -> moManHinhThongKeTaiChinh();
+            case "DICHVU" -> moManHinhDichVu();
+            case "PHANHOI" -> moManHinhPhanHoi();
+            default -> cardLayout.show(pnlContent, maTrang);
+        }
+    }
 
-        JLabel lblDesc = new JLabel(moTa);
-        lblDesc.setFont(new Font("Arial", Font.PLAIN, 14));
-        lblDesc.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        box.add(lblTitle);
-        box.add(Box.createVerticalStrut(15));
-        box.add(lblDesc);
-
-        panel.add(box);
-        return panel;
+    private void dangNhapTuTrangChu() {
+        if (damBaoKetNoiChung() && damBaoDangNhapNhanSu()) dashboard.taiLai();
     }
 
     private void moManHinhLeTan(String trang) {
@@ -415,10 +419,7 @@ public class MainFrame extends JFrame {
 
     private void moManHinhNhanSu(String trang) {
         if (!damBaoKetNoiChung() || !damBaoDangNhapNhanSu()) return;
-        boolean admin = PhienDangNhap.laAdmin();
-        boolean keToan = PhienDangNhap.laVaiTro("KETOAN");
-        if (("NHANVIEN".equals(trang) && !admin && !keToan)
-                || (("CALAM".equals(trang) || "TAIKHOAN".equals(trang)) && !admin)) {
+        if (!QuyenTruyCap.duocMo(PhienDangNhap.getTaiKhoan().getMaVaiTro(), trang)) {
             JOptionPane.showMessageDialog(this, "Tài khoản này không có quyền mở chức năng.");
             return;
         }
@@ -426,7 +427,7 @@ public class MainFrame extends JFrame {
         switch (trang) {
             case "NHANVIEN" -> {
                 if (nhanVienPanel == null) {
-                    nhanVienPanel = new NhanVienPanel(keToan);
+                    nhanVienPanel = new NhanVienPanel(false);
                     pnlContent.add(nhanVienPanel, "NHANVIEN");
                 }
             }
@@ -465,20 +466,14 @@ public class MainFrame extends JFrame {
 
         JTextField userField = new JTextField(20);
         JPasswordField passwordField = new JPasswordField(20);
-        JPanel form = new JPanel(new GridLayout(0, 1, 4, 4));
-        form.add(new JLabel("Tên đăng nhập hệ thống nhân sự:"));
-        form.add(userField);
-        form.add(new JLabel("Mật khẩu hệ thống nhân sự:"));
-        form.add(passwordField);
         for (int attempt = 0; attempt < 3; attempt++) {
-            if (JOptionPane.showConfirmDialog(this, form, "Đăng nhập nhân sự",
-                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE)
-                    != JOptionPane.OK_OPTION) return false;
+            if (!hienThiHopThoaiDangNhap(userField, passwordField)) return false;
             char[] password = passwordField.getPassword();
             try {
                 TaiKhoan account = nhanSuAccess.dangNhap(userField.getText(), password);
                 if (account != null) {
                     PhienDangNhap.setTaiKhoan(account);
+                    capNhatQuyenMenu();
                     return true;
                 }
                 JOptionPane.showMessageDialog(this,
@@ -493,6 +488,90 @@ public class MainFrame extends JFrame {
             }
         }
         return false;
+    }
+
+    private boolean hienThiHopThoaiDangNhap(JTextField userField,
+            JPasswordField passwordField) {
+        Color navy = new Color(23, 54, 93);
+        JDialog dialog = new JDialog(this, "Đăng nhập nhân sự", true);
+        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        dialog.setResizable(false);
+
+        JPanel content = new JPanel(new BorderLayout());
+        content.setBackground(Color.WHITE);
+        content.setBorder(BorderFactory.createLineBorder(navy, 2));
+
+        JPanel heading = new JPanel(new BorderLayout(0, 5));
+        heading.setBackground(navy);
+        heading.setBorder(new EmptyBorder(17, 22, 17, 22));
+        JLabel title = new JLabel("ĐĂNG NHẬP NHÂN SỰ");
+        title.setForeground(Color.WHITE);
+        title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+        JLabel subtitle = new JLabel("Hệ thống quản lý khách sạn");
+        subtitle.setForeground(new Color(210, 226, 245));
+        subtitle.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+        heading.add(title, BorderLayout.NORTH);
+        heading.add(subtitle, BorderLayout.SOUTH);
+        content.add(heading, BorderLayout.NORTH);
+
+        JPanel fields = new JPanel();
+        fields.setLayout(new BoxLayout(fields, BoxLayout.Y_AXIS));
+        fields.setBackground(Color.WHITE);
+        fields.setBorder(new EmptyBorder(18, 22, 10, 22));
+        JLabel userLabel = new JLabel("Tên đăng nhập");
+        JLabel passwordLabel = new JLabel("Mật khẩu");
+        for (JLabel label : new JLabel[]{userLabel, passwordLabel}) {
+            label.setForeground(navy);
+            label.setFont(new Font("Segoe UI", Font.BOLD, 12));
+            label.setAlignmentX(Component.LEFT_ALIGNMENT);
+        }
+        for (JTextField field : new JTextField[]{userField, passwordField}) {
+            field.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+            field.setAlignmentX(Component.LEFT_ALIGNMENT);
+            field.setMaximumSize(new Dimension(Integer.MAX_VALUE, 36));
+            field.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createLineBorder(new Color(189, 205, 224)),
+                    new EmptyBorder(6, 9, 6, 9)));
+        }
+        fields.add(userLabel);
+        fields.add(Box.createVerticalStrut(5));
+        fields.add(userField);
+        fields.add(Box.createVerticalStrut(13));
+        fields.add(passwordLabel);
+        fields.add(Box.createVerticalStrut(5));
+        fields.add(passwordField);
+        content.add(fields, BorderLayout.CENTER);
+
+        JPanel actions = new JPanel(new FlowLayout(FlowLayout.RIGHT, 9, 0));
+        actions.setBackground(Color.WHITE);
+        actions.setBorder(new EmptyBorder(8, 22, 19, 22));
+        JButton cancel = new ColoredButton("Hủy", new Color(228, 237, 247),
+                new Color(210, 226, 243), navy);
+        JButton login = new ColoredButton("Đăng nhập", new Color(40, 81, 130),
+                new Color(55, 107, 165), Color.WHITE);
+        for (JButton button : new JButton[]{cancel, login}) {
+            button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+            button.setPreferredSize(new Dimension(105, 36));
+        }
+        boolean[] accepted = {false};
+        cancel.addActionListener(e -> dialog.dispose());
+        login.addActionListener(e -> {
+            accepted[0] = true;
+            dialog.dispose();
+        });
+        actions.add(cancel);
+        actions.add(login);
+        content.add(actions, BorderLayout.SOUTH);
+
+        dialog.setContentPane(content);
+        dialog.getRootPane().setDefaultButton(login);
+        dialog.pack();
+        dialog.setSize(Math.max(400, dialog.getWidth()),
+                Math.max(340, dialog.getHeight()));
+        dialog.setLocationRelativeTo(this);
+        SwingUtilities.invokeLater(userField::requestFocusInWindow);
+        dialog.setVisible(true);
+        return accepted[0];
     }
 
     private boolean taoQuanTriNhanSuDauTien() {
@@ -538,14 +617,18 @@ public class MainFrame extends JFrame {
     private void dangXuatNhanSu() {
         if (PhienDangNhap.getTaiKhoan() == null) return;
         PhienDangNhap.dangXuat();
+        dashboard.xoaDuLieuCaNhan();
         if (nhanVienPanel != null) pnlContent.remove(nhanVienPanel);
         if (caLamPanel != null) pnlContent.remove(caLamPanel);
         if (phanCaPanel != null) pnlContent.remove(phanCaPanel);
         if (taiKhoanPanel != null) pnlContent.remove(taiKhoanPanel);
+        if (phanHoiPanel != null) pnlContent.remove(phanHoiPanel);
         nhanVienPanel = null;
         caLamPanel = null;
         phanCaPanel = null;
         taiKhoanPanel = null;
+        phanHoiPanel = null;
+        capNhatQuyenMenu();
         cardLayout.show(pnlContent, "HOME");
         JOptionPane.showMessageDialog(this, "Đã đăng xuất khỏi phần nhân sự.");
     }
@@ -571,6 +654,7 @@ public class MainFrame extends JFrame {
     }
 
     private void moManHinhChiTietHoaDon(String maHoaDon) {
+        if (!duocMoHienTai("CHITIET")) return;
         if (!damBaoKetNoiChung()) return;
         if (chiTietHoaDonPanel == null) {
             chiTietHoaDonPanel = new ChiTietHoaDonPanel();
@@ -592,6 +676,7 @@ public class MainFrame extends JFrame {
     }
 
     private void moManHinhThanhToan(String maHoaDon) {
+        if (!duocMoHienTai("THANHTOAN")) return;
         if (!damBaoKetNoiChung()) return;
         if (thanhToanPanel == null) {
             thanhToanPanel = new ThanhToanPanel();
@@ -628,10 +713,16 @@ public class MainFrame extends JFrame {
     private void moManHinhPhanHoi() {
         if (!damBaoKetNoiChung()) return;
         if (phanHoiPanel == null) {
-            phanHoiPanel = new PhanHoiPanel();
+            phanHoiPanel = new PhanHoiPanel(
+                    QuyenTruyCap.chiXemPhanHoi(PhienDangNhap.getTaiKhoan().getMaVaiTro()));
             pnlContent.add(phanHoiPanel, "PHANHOI");
         }
         cardLayout.show(pnlContent, "PHANHOI");
+    }
+
+    private boolean duocMoHienTai(String trang) {
+        TaiKhoan account = PhienDangNhap.getTaiKhoan();
+        return account != null && QuyenTruyCap.duocMo(account.getMaVaiTro(), trang);
     }
 
 }

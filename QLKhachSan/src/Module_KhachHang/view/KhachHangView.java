@@ -1,6 +1,7 @@
 package Module_KhachHang.view;
 
 import common.ui.TableUi;
+import common.ui.ColoredButton;
 import Module_KhachHang.controller.KhachHangController;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -319,11 +320,12 @@ public class KhachHangView extends JPanel {
     }
 
     private JButton button(String label, boolean primary) {
-        JButton button = new JButton(label);
+        JButton button = new ColoredButton(label,
+                primary ? NAVY : new Color(234, 240, 247),
+                primary ? new Color(43, 91, 146) : new Color(215, 229, 244),
+                primary ? WHITE : NAVY);
         button.setFont(new Font("Arial", Font.BOLD, 12));
-        button.setForeground(primary ? WHITE : NAVY);
-        button.setBackground(primary ? NAVY : new Color(234, 240, 247));
-        button.setFocusPainted(false);
+        button.setBorder(BorderFactory.createEmptyBorder(8, 15, 8, 15));
         return button;
     }
     private void addField(JPanel panel, String label, java.awt.Component field) {
