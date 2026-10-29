@@ -15,8 +15,8 @@
 
 Cả 15 module dùng chung kết nối tới `QuanLyKhachSan`. Ba lớp `DBConnection`
 của Tài chính, Dịch vụ và Phản hồi chỉ còn là cầu nối tương thích với mã cũ;
-không tạo database riêng. Chưa dùng các script SQL đơn lẻ của từng nhóm để
-tạo lại database tích hợp.
+không tạo database riêng. Bản tích hợp chỉ dùng `../database/FULL_DATABASE.sql`
+để dựng database mới; không dùng các script SQL riêng của từng module cũ.
 
 Trả phòng tự lập hóa đơn gồm tiền phòng và các dịch vụ đã ghi nhận cho đơn.
 Đổi phòng khi đang ở lập ngay hóa đơn cho chặng phòng cũ; đơn phòng mới sẽ được
@@ -32,6 +32,22 @@ Mở **Quản lý hóa đơn** để tìm theo mã đặt phòng; xem các dòng
 **Chi tiết hóa đơn**, thanh toán và đối chiếu thống kê. Thử riêng đổi phòng:
 đơn cũ có hóa đơn ngay, đơn mới có hóa đơn khi kết thúc chặng mới. Không dùng
 các mã đặt phòng chưa ở hoặc đã trả để ghi dịch vụ.
+
+## Trang chủ và điều hướng
+
+Sidebar chỉ giữ Trang chủ và năm nhóm chức năng; mỗi lần chỉ mở danh sách của
+một nhóm. Trang chủ có cùng nhóm để chọn chức năng mà không cần cuộn sidebar.
+Nhấn **Đăng nhập / Tải dữ liệu** để xác thực tài khoản nhân sự và xem lịch ca
+trong ngày, việc chưa bàn giao, việc dọn phòng/bảo trì được giao và cảnh báo
+việc quá hạn hoặc bảo trì ưu tiên cao. Nút **Làm mới** và việc quay lại Trang chủ
+sẽ cập nhật lại dữ liệu. Đăng xuất sẽ xóa thông tin cá nhân khỏi màn hình.
+
+Lịch ca/bàn giao lọc theo mã nhân viên của tài khoản. Việc dọn phòng/bảo trì
+hiện lưu người phụ trách bằng tên tự do, nên trang chủ chỉ hiện khi tên nhập
+trùng chính xác họ tên nhân viên; nếu có hai nhân viên trùng họ tên thì không
+tự gán việc để tránh hiển thị sai người. Biểu đồ doanh thu lấy số liệu hóa đơn
+theo ngày lập trong 7 ngày gần nhất và chỉ hiển thị với Admin/Kế toán. Không
+thêm bảng hay cột vào database.
 
 ## Cấu trúc source hiện tại
 

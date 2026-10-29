@@ -22,8 +22,10 @@ public class PhanHoiPanel extends JPanel {
     private List<PhanHoi> rows=new ArrayList<>();
     private boolean busy;
 
-    public PhanHoiPanel() { this(new PhanHoiController()); }
-    public PhanHoiPanel(PhanHoiController controller) {
+    public PhanHoiPanel() { this(new PhanHoiController(), false); }
+    public PhanHoiPanel(boolean chiXem) { this(new PhanHoiController(), chiXem); }
+    public PhanHoiPanel(PhanHoiController controller) { this(controller, false); }
+    public PhanHoiPanel(PhanHoiController controller, boolean chiXem) {
         this.controller=controller;
         setLayout(new BorderLayout(12,12));setBackground(PhanHoiUI.BACKGROUND);
         setBorder(BorderFactory.createEmptyBorder(18,20,18,20));
@@ -60,8 +62,10 @@ public class PhanHoiPanel extends JPanel {
         list.add(scroll,BorderLayout.CENTER);add(list,BorderLayout.CENTER);
         JPanel bottom=new JPanel(new BorderLayout());bottom.setOpaque(false);
         JPanel buttons=new JPanel(new FlowLayout(FlowLayout.LEFT,10,5));buttons.setOpaque(false);
-        buttons.add(action("Tiếp nhận mới",new Color(39,145,87),()->new TiepNhanPhanHoiDialog(owner(),controller,this::taiDanhSach).setVisible(true)));
-        buttons.add(action("Cập nhật xử lý",new Color(230,151,37),this::xuLy));
+        if (!chiXem) {
+            buttons.add(action("Tiếp nhận mới",new Color(39,145,87),()->new TiepNhanPhanHoiDialog(owner(),controller,this::taiDanhSach).setVisible(true)));
+            buttons.add(action("Cập nhật xử lý",new Color(230,151,37),this::xuLy));
+        }
         buttons.add(action("Xem lịch sử",new Color(92,73,145),this::lichSu));
         buttons.add(action("Làm mới",new Color(108,117,125),this::taiDanhSach));
         bottom.add(buttons,BorderLayout.CENTER);bottom.add(status,BorderLayout.SOUTH);add(bottom,BorderLayout.SOUTH);

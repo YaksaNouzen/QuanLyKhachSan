@@ -111,6 +111,6 @@ public class PhanHoiService {
     }
     private static IllegalStateException databaseError() {
         // Do not expose JDBC messages containing server/account details to the UI.
-        return new IllegalStateException("Không thể hoàn tất thao tác với QLPhanHoi. Kiểm tra kết nối và script trong README-PHANHOI.md. Nếu mất kết nối lúc lưu, hãy tải lại để kiểm tra trước khi thử lại.");
+        return new IllegalStateException("Không thể hoàn tất thao tác với cơ sở dữ liệu QuanLyKhachSan. Kiểm tra kết nối và cấu trúc theo database/README.md. Nếu mất kết nối lúc lưu, hãy tải lại để kiểm tra trước khi thử lại.");
     }
 }
