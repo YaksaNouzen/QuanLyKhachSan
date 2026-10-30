@@ -3,6 +3,7 @@ package Module_NhaCungCap.view;
 import Module_NhaCungCap.controller.NhaCungCapController;
 import Module_NhaCungCap.model.NhaCungCap;
 import common.kho.ui.GiaoDien;
+import common.ui.ColoredButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -44,7 +45,8 @@ public class NhaCungCapPanel extends JPanel {
     private final JTextField txtTim = new JTextField(20);
     private final JComboBox<String> cboLoc = new JComboBox<>(
             new String[]{"Tất cả", "Đang hoạt động", "Ngừng hoạt động"});
-    private final JButton btnDoiTrangThai = new JButton("Ngừng hoạt động");
+    private final ColoredButton btnDoiTrangThai = GiaoDien.nut(
+            "Ngừng hoạt động", GiaoDien.CAM, Color.WHITE);
     private final DefaultTableModel model = new DefaultTableModel(
             new String[]{"Mã", "Tên nhà cung cấp", "Điện thoại", "Email",
                 "Địa chỉ", "Trạng thái", "Ghi chú"}, 0) {
@@ -105,10 +107,10 @@ public class NhaCungCapPanel extends JPanel {
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttons.setBackground(Color.WHITE);
-        JButton them = new JButton("Thêm");
-        JButton sua = new JButton("Sửa");
-        JButton lichSu = new JButton("Lịch sử cung cấp");
-        JButton moi = new JButton("Làm mới");
+        JButton them = GiaoDien.nut("Thêm", GiaoDien.XANH_LA, Color.WHITE);
+        JButton sua = GiaoDien.nut("Sửa", GiaoDien.XANH, Color.WHITE);
+        JButton lichSu = GiaoDien.nut("Lịch sử cung cấp", GiaoDien.TIM, Color.WHITE);
+        JButton moi = GiaoDien.nut("Làm mới", GiaoDien.NHAT, GiaoDien.XANH_DAM);
         btnDoiTrangThai.setEnabled(false);
         buttons.add(them); buttons.add(sua); buttons.add(btnDoiTrangThai);
         buttons.add(lichSu); buttons.add(moi);
@@ -125,7 +127,7 @@ public class NhaCungCapPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 232)));
-        JButton tim = new JButton("Tìm kiếm");
+        JButton tim = GiaoDien.nut("Tìm kiếm", GiaoDien.XANH, Color.WHITE);
         panel.add(new JLabel("Từ khóa:")); panel.add(txtTim);
         panel.add(new JLabel("Trạng thái:")); panel.add(cboLoc); panel.add(tim);
         tim.addActionListener(e -> taiDuLieu());
@@ -165,6 +167,8 @@ public class NhaCungCapPanel extends JPanel {
         boolean dangHoatDong = "Đang hoạt động".equals(chuoi(row, 5));
         btnDoiTrangThai.setText(dangHoatDong
                 ? "Ngừng hoạt động" : "Kích hoạt lại");
+        Color mau = dangHoatDong ? GiaoDien.CAM : GiaoDien.XANH_LA;
+        btnDoiTrangThai.setPalette(mau, mau.darker(), Color.WHITE);
         btnDoiTrangThai.setEnabled(true);
     }
 
@@ -240,6 +244,7 @@ public class NhaCungCapPanel extends JPanel {
         txtDienThoai.setText(""); txtEmail.setText(""); txtDiaChi.setText("");
         txtGhiChu.setText(""); cboTrangThai.setSelectedIndex(0); table.clearSelection();
         btnDoiTrangThai.setText("Ngừng hoạt động");
+        btnDoiTrangThai.setPalette(GiaoDien.CAM, GiaoDien.CAM.darker(), Color.WHITE);
         btnDoiTrangThai.setEnabled(false);
     }
 

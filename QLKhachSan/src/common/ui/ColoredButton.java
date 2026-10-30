@@ -11,8 +11,8 @@ import javax.swing.JButton;
 
 /** Nút có nền tự vẽ để Windows Look and Feel không đổi nền thành trắng. */
 public final class ColoredButton extends JButton {
-    private final Color normal;
-    private final Color hover;
+    private Color normal;
+    private Color hover;
     private boolean hovered;
 
     public ColoredButton(String text, Color normal, Color hover, Color foreground) {
@@ -37,12 +37,25 @@ public final class ColoredButton extends JButton {
         });
     }
 
+    public void setPalette(Color normal, Color hover, Color foreground) {
+        this.normal = normal;
+        this.hover = hover;
+        setForeground(foreground);
+        repaint();
+    }
+
     @Override protected void paintComponent(Graphics graphics) {
         Graphics2D g = (Graphics2D) graphics.create();
         try {
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING,
                     RenderingHints.VALUE_ANTIALIAS_ON);
-            g.setColor(hovered || getModel().isPressed() ? hover : normal);
+            Color fill = hovered || getModel().isPressed() ? hover : normal;
+            if (!isEnabled()) {
+                fill = new Color((fill.getRed() + 2 * 255) / 3,
+                        (fill.getGreen() + 2 * 255) / 3,
+                        (fill.getBlue() + 2 * 255) / 3);
+            }
+            g.setColor(fill);
             g.fillRoundRect(0, 0, getWidth() - 1, getHeight() - 1, 10, 10);
         } finally {
             g.dispose();
