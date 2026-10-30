@@ -113,7 +113,7 @@ public class PhieuNhapPanel extends JPanel {
     private JPanel taoBoLoc() {
         JPanel panel = GiaoDien.panelTrangTri();
         panel.setLayout(new FlowLayout(FlowLayout.LEFT, 7, 2));
-        JButton tim = new JButton("Tìm kiếm");
+        JButton tim = GiaoDien.nut("Tìm kiếm", GiaoDien.XANH, Color.WHITE);
         panel.add(new JLabel("Từ khóa:")); panel.add(txtTim);
         panel.add(new JLabel("Trạng thái:")); panel.add(cboLocTrangThai);
         panel.add(new JLabel("Từ ngày:")); panel.add(txtTuNgay);
@@ -147,8 +147,8 @@ public class PhieuNhapPanel extends JPanel {
         chiTiet.setBackground(Color.WHITE);
         JPanel themDong = new JPanel(new FlowLayout(FlowLayout.LEFT, 7, 2));
         themDong.setBackground(Color.WHITE);
-        JButton them = new JButton("Thêm dòng");
-        JButton xoa = new JButton("Xóa dòng");
+        JButton them = GiaoDien.nut("Thêm dòng", GiaoDien.XANH_LA, Color.WHITE);
+        JButton xoa = GiaoDien.nut("Xóa dòng", GiaoDien.DO, Color.WHITE);
         themDong.add(new JLabel("Vật tư:")); themDong.add(cboVatTu);
         themDong.add(new JLabel("Số lượng:")); themDong.add(txtSoLuong);
         themDong.add(new JLabel("Đơn giá:")); themDong.add(txtDonGia);
@@ -161,10 +161,10 @@ public class PhieuNhapPanel extends JPanel {
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER, 8, 2));
         buttons.setBackground(Color.WHITE);
-        JButton moi = new JButton("Phiếu mới");
-        JButton luu = new JButton("Lưu nháp");
-        JButton xacNhan = new JButton("Xác nhận nhập kho");
-        JButton huy = new JButton("Hủy phiếu");
+        JButton moi = GiaoDien.nut("Phiếu mới", GiaoDien.NHAT, GiaoDien.XANH_DAM);
+        JButton luu = GiaoDien.nut("Lưu nháp", GiaoDien.XANH, Color.WHITE);
+        JButton xacNhan = GiaoDien.nut("Xác nhận nhập kho", GiaoDien.XANH_LA, Color.WHITE);
+        JButton huy = GiaoDien.nut("Hủy phiếu", GiaoDien.DO, Color.WHITE);
         buttons.add(new JLabel("Tổng tiền:")); buttons.add(lblTongTien);
         buttons.add(moi); buttons.add(luu); buttons.add(xacNhan); buttons.add(huy);
         wrapper.add(buttons, BorderLayout.SOUTH);

@@ -3,6 +3,7 @@ package Module_KhoVatTu.view;
 import Module_KhoVatTu.controller.VatTuController;
 import Module_KhoVatTu.model.VatTu;
 import common.kho.ui.GiaoDien;
+import common.ui.ColoredButton;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.FlowLayout;
@@ -40,7 +41,8 @@ public class VatTuPanel extends JPanel {
     private final JComboBox<String> cboLoc = new JComboBox<>(
             new String[]{"Tất cả", "Đang sử dụng", "Ngừng sử dụng"});
     private final JCheckBox chkSapHet = new JCheckBox("Chỉ vật tư sắp hết");
-    private final JButton btnDoiTrangThai = new JButton("Ngừng sử dụng");
+    private final ColoredButton btnDoiTrangThai = GiaoDien.nut(
+            "Ngừng sử dụng", GiaoDien.CAM, Color.WHITE);
     private final DefaultTableModel model = new DefaultTableModel(
             new String[]{"Mã", "Tên vật tư", "Đơn vị", "Tồn kho",
                 "Tồn tối thiểu", "Trạng thái", "Cảnh báo"}, 0) {
@@ -106,10 +108,10 @@ public class VatTuPanel extends JPanel {
 
         JPanel buttons = new JPanel(new FlowLayout(FlowLayout.CENTER));
         buttons.setBackground(Color.WHITE);
-        JButton btnThem = new JButton("Thêm");
-        JButton btnSua = new JButton("Sửa");
-        JButton btnXuat = new JButton("Xuất kho");
-        JButton btnMoi = new JButton("Làm mới");
+        JButton btnThem = GiaoDien.nut("Thêm", GiaoDien.XANH_LA, Color.WHITE);
+        JButton btnSua = GiaoDien.nut("Sửa", GiaoDien.XANH, Color.WHITE);
+        JButton btnXuat = GiaoDien.nut("Xuất kho", GiaoDien.TIM, Color.WHITE);
+        JButton btnMoi = GiaoDien.nut("Làm mới", GiaoDien.NHAT, GiaoDien.XANH_DAM);
         btnDoiTrangThai.setEnabled(false);
         buttons.add(btnThem); buttons.add(btnSua); buttons.add(btnDoiTrangThai);
         buttons.add(btnXuat); buttons.add(btnMoi);
@@ -126,7 +128,7 @@ public class VatTuPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 4));
         panel.setBackground(Color.WHITE);
         panel.setBorder(BorderFactory.createLineBorder(new Color(220, 225, 232)));
-        JButton btnTim = new JButton("Tìm kiếm");
+        JButton btnTim = GiaoDien.nut("Tìm kiếm", GiaoDien.XANH, Color.WHITE);
         panel.add(new JLabel("Từ khóa:")); panel.add(txtTim);
         panel.add(new JLabel("Trạng thái:")); panel.add(cboLoc);
         panel.add(chkSapHet); panel.add(btnTim);
@@ -175,6 +177,8 @@ public class VatTuPanel extends JPanel {
         boolean dangSuDung = "Đang sử dụng".equals(model.getValueAt(row, 5));
         btnDoiTrangThai.setText(dangSuDung
                 ? "Ngừng sử dụng" : "Kích hoạt lại");
+        Color mau = dangSuDung ? GiaoDien.CAM : GiaoDien.XANH_LA;
+        btnDoiTrangThai.setPalette(mau, mau.darker(), Color.WHITE);
         btnDoiTrangThai.setEnabled(true);
     }
 
@@ -237,6 +241,7 @@ public class VatTuPanel extends JPanel {
         txtTon.setText("0"); txtToiThieu.setText("0"); txtMoTa.setText("");
         cboTrangThai.setSelectedIndex(0); table.clearSelection();
         btnDoiTrangThai.setText("Ngừng sử dụng");
+        btnDoiTrangThai.setPalette(GiaoDien.CAM, GiaoDien.CAM.darker(), Color.WHITE);
         btnDoiTrangThai.setEnabled(false);
     }
 
